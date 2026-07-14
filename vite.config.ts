@@ -8,12 +8,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: "autoUpdate",
-        includeAssets: [
-          "favicon.svg",
-          "pwa-192x192.svg",
-          "pwa-512x512.svg",
-          "apple-touch-icon.svg"
-        ],
+        includeAssets: ["favicon.svg", "carnet-pwa-icon.svg"],
         manifest: {
           name: "Equipo de Peñarol",
           short_name: "Carnet",
@@ -25,13 +20,13 @@ export default defineConfig(({ mode }) => {
           start_url: "./",
           icons: [
             {
-              src: "pwa-192x192.svg",
+              src: "carnet-pwa-icon.svg",
               sizes: "192x192",
               type: "image/svg+xml",
               purpose: "any"
             },
             {
-              src: "pwa-512x512.svg",
+              src: "carnet-pwa-icon.svg",
               sizes: "512x512",
               type: "image/svg+xml",
               purpose: "any"
