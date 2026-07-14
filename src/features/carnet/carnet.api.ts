@@ -13,6 +13,10 @@ type UpdatePlayerResponse = {
   item: CarnetPlayer;
 };
 
+type DeletePlayerResponse = {
+  item: CarnetPlayer;
+};
+
 async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const fallbackText = await response.text().catch(() => "");
@@ -39,7 +43,7 @@ export async function createCarnetPlayer(payload: CarnetPlayerPayload) {
   return readJson<CreatePlayerResponse>(response);
 }
 
-export async function updateCarnetPlayer(playerId: number, payload: Pick<CarnetPlayerPayload, "expiryDate">) {
+export async function updateCarnetPlayer(playerId: number, payload: Partial<CarnetPlayerPayload>) {
   const response = await fetch(`${API_BASE_URL}/carnet/players/${playerId}`, {
     method: "PATCH",
     headers: {
@@ -49,4 +53,12 @@ export async function updateCarnetPlayer(playerId: number, payload: Pick<CarnetP
   });
 
   return readJson<UpdatePlayerResponse>(response);
+}
+
+export async function deleteCarnetPlayer(playerId: number) {
+  const response = await fetch(`${API_BASE_URL}/carnet/players/${playerId}`, {
+    method: "DELETE"
+  });
+
+  return readJson<DeletePlayerResponse>(response);
 }

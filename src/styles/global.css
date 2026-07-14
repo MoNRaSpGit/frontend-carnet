@@ -259,8 +259,27 @@ select {
 
 .carnet-modal__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.carnet-modal__actions-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.carnet-modal__danger {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #dc2626;
+  background: #dc2626;
+  color: #fff;
+  padding: 0 14px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .carnet-grid {
@@ -367,6 +386,15 @@ select {
   .carnet-player-card__top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .carnet-modal__actions {
+    justify-content: stretch;
+  }
+
+  .carnet-modal__actions-right {
+    width: 100%;
+    justify-content: stretch;
   }
 
 }

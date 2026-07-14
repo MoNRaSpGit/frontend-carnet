@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { createCarnetPlayer, listCarnetPlayers, updateCarnetPlayer } from "../features/carnet/carnet.api";
+import {
+  createCarnetPlayer,
+  deleteCarnetPlayer,
+  listCarnetPlayers,
+  updateCarnetPlayer
+} from "../features/carnet/carnet.api";
 import type { CarnetPlayer } from "../features/carnet/carnet.types";
 
 type AlertState = "normal" | "warning" | "critical";
 type SourceState = "loading" | "online" | "local";
+type SavingAction = "save" | "delete" | null;
 
 type EditingState = {
   playerId: number;
@@ -98,7 +104,7 @@ export function App() {
   const [formError, setFormError] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<EditingState>(null);
   const [editingError, setEditingError] = useState<string | null>(null);
-  const [savingEdit, setSavingEdit] = useState(false);
+  const [savingAction, setSavingAction] = useState<SavingAction>(null);
 
   useEffect(() => {
     let active = true;
@@ -143,8 +149,9 @@ export function App() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedName = name.trim();
+
     if (!trimmedName || !expiryDate) {
-      setFormError("Completá nombre y fecha antes de guardar.");
+      setFormError("Completa nombre y fecha antes de guardar.");
       return;
     }
 
@@ -173,7 +180,7 @@ export function App() {
       setName("");
       setExpiryDate("");
       setSourceState("local");
-      setFormError("No se pudo guardar en el backend; quedó agregado en modo local por ahora.");
+      setFormError("No se pudo guardar en el backend; quedo agregado en modo local por ahora.");
     }
   }
 
@@ -191,18 +198,23 @@ export function App() {
       return;
     }
 
-    setSavingEdit(true);
+    const trimmedName = editingPlayer.playerName.trim();
+    if (!trimmedName || !editingPlayer.expiryDate) {
+      setEditingError("Completa nombre y fecha antes de guardar.");
+      return;
+    }
+
+    setSavingAction("save");
     setEditingError(null);
 
     try {
       const response = await updateCarnetPlayer(editingPlayer.playerId, {
+        name: trimmedName,
         expiryDate: editingPlayer.expiryDate
       });
 
       setPlayers((current) =>
-        sortPlayers(
-          current.map((player) => (player.id === response.item.id ? response.item : player))
-        )
+        sortPlayers(current.map((player) => (player.id === response.item.id ? response.item : player)))
       );
       setSourceState("online");
       setEditingPlayer(null);
@@ -213,6 +225,7 @@ export function App() {
             player.id === editingPlayer.playerId
               ? {
                   ...player,
+                  name: trimmedName,
                   expiryDate: editingPlayer.expiryDate,
                   updatedAt: new Date().toISOString()
                 }
@@ -221,25 +234,56 @@ export function App() {
         )
       );
       setSourceState("local");
-      setEditingError("No se pudo guardar en el backend; quedó actualizado solo en pantalla.");
+      setEditingError("No se pudo guardar en el backend; quedo actualizado solo en pantalla.");
       setEditingPlayer(null);
     } finally {
-      setSavingEdit(false);
+      setSavingAction(null);
     }
   }
+
+  async function deletePlayer() {
+    if (!editingPlayer) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Eliminar a ${editingPlayer.playerName}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setSavingAction("delete");
+    setEditingError(null);
+
+    try {
+      await deleteCarnetPlayer(editingPlayer.playerId);
+      setPlayers((current) => current.filter((player) => player.id !== editingPlayer.playerId));
+      setSourceState("online");
+      setEditingPlayer(null);
+    } catch {
+      setPlayers((current) => current.filter((player) => player.id !== editingPlayer.playerId));
+      setSourceState("local");
+      setEditingError("No se pudo borrar en el backend; quedo eliminado solo en pantalla.");
+      setEditingPlayer(null);
+    } finally {
+      setSavingAction(null);
+    }
+  }
+
+  const isSaving = savingAction === "save";
+  const isDeleting = savingAction === "delete";
 
   return (
     <main className="carnet-shell">
       <section className="carnet-layout">
         <header className="carnet-hero">
           <div>
-            <p className="carnet-kicker">Peñarol - Montevideo - Uruguay</p>
-            <h1>Equipo de Peñarol</h1>
-            <p className="carnet-note">Alta simple de jugador con vencimiento del carnet y alertas visuales por fecha.</p>
+            <p className="carnet-kicker">Registro de carnet</p>
+            <h1>Registro de carnet</h1>
+            <p className="carnet-note">Gestion simple de jugadores con vencimientos, edicion y bajas rapidas.</p>
           </div>
 
           <div className="carnet-hero__meta">
-            <span className="carnet-source">Peñarol</span>
+            <span className="carnet-source">Registro</span>
             <div className="carnet-stats" aria-label="Resumen">
               <article className="carnet-stat">
                 <span>Jugadores</span>
@@ -250,7 +294,7 @@ export function App() {
                 <strong>{stats.warning}</strong>
               </article>
               <article className="carnet-stat is-critical">
-                <span>Críticos</span>
+                <span>Criticos</span>
                 <strong>{stats.critical}</strong>
               </article>
             </div>
@@ -277,11 +321,7 @@ export function App() {
 
             <label className="carnet-field">
               <span>Vencimiento</span>
-              <input
-                type="date"
-                value={expiryDate}
-                onChange={(event) => setExpiryDate(event.target.value)}
-              />
+              <input type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} />
             </label>
 
             <button type="submit" className="carnet-submit">
@@ -290,7 +330,6 @@ export function App() {
           </form>
 
           {formError ? <p className="carnet-form-error">{formError}</p> : null}
-          {editingError ? <p className="carnet-form-error">{editingError}</p> : null}
         </section>
 
         <section className="carnet-grid" aria-label="Lista de jugadores">
@@ -322,9 +361,7 @@ export function App() {
                 </div>
 
                 <div className="carnet-player-card__footer">
-                  <strong>
-                    {daysLeft > 0 ? `Faltan ${daysLeft} días` : daysLeft === 0 ? "Vence hoy" : "Vencido"}
-                  </strong>
+                  <strong>{daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}</strong>
                   <small>
                     {alertState === "normal"
                       ? "En estado normal."
@@ -345,7 +382,7 @@ export function App() {
             className="carnet-modal"
             role="dialog"
             aria-modal="true"
-            aria-label={`Editar fecha de ${editingPlayer.playerName}`}
+            aria-label={`Editar jugador ${editingPlayer.playerName}`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="carnet-modal__header">
@@ -357,6 +394,16 @@ export function App() {
                 Cerrar
               </button>
             </div>
+
+            <label className="carnet-field">
+              <span>Nombre</span>
+              <input
+                value={editingPlayer.playerName}
+                onChange={(event) =>
+                  setEditingPlayer((current) => (current ? { ...current, playerName: event.target.value } : current))
+                }
+              />
+            </label>
 
             <label className="carnet-field">
               <span>Vencimiento</span>
@@ -371,13 +418,26 @@ export function App() {
               />
             </label>
 
+            {editingError ? <p className="carnet-form-error">{editingError}</p> : null}
+
             <div className="carnet-modal__actions">
-              <button type="button" className="carnet-modal__ghost" onClick={() => setEditingPlayer(null)}>
-                Cancelar
+              <button
+                type="button"
+                className="carnet-modal__danger"
+                onClick={deletePlayer}
+                disabled={isSaving || isDeleting}
+              >
+                {isDeleting ? "Eliminando..." : "Eliminar jugador"}
               </button>
-              <button type="button" className="carnet-submit" onClick={saveEdit} disabled={savingEdit}>
-                {savingEdit ? "Guardando..." : "Guardar cambio"}
-              </button>
+
+              <div className="carnet-modal__actions-right">
+                <button type="button" className="carnet-modal__ghost" onClick={() => setEditingPlayer(null)}>
+                  Cancelar
+                </button>
+                <button type="button" className="carnet-submit" onClick={saveEdit} disabled={isSaving || isDeleting}>
+                  {isSaving ? "Guardando..." : "Guardar cambio"}
+                </button>
+              </div>
             </div>
           </section>
         </div>
