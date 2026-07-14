@@ -278,7 +278,7 @@ export function App() {
         <header className="carnet-hero">
           <div>
             <p className="carnet-kicker">Registro de carnet</p>
-            <h1>Registro de carnet</h1>
+            <h1>Equipo de Peñarol</h1>
             <p className="carnet-note">Gestion simple de jugadores con vencimientos, edicion y bajas rapidas.</p>
           </div>
 
