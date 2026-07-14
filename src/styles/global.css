@@ -95,32 +95,16 @@ select {
 .carnet-stat {
   padding: 16px;
   border-radius: 16px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   display: grid;
-  gap: 6px;
-}
-
-.carnet-stat span {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #64748b;
+  place-items: center;
+  min-height: 92px;
 }
 
 .carnet-stat strong {
-  font-size: 1.6rem;
-}
-
-.carnet-stat.is-warning {
-  background: #fef9c3;
-  border-color: #facc15;
-}
-
-.carnet-stat.is-critical {
-  background: #fee2e2;
-  border-color: #fca5a5;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .carnet-source {
@@ -295,19 +279,11 @@ select {
   overflow: hidden;
   padding: 18px;
   border-radius: 18px;
-  border: 1px solid #dbe4ee;
+  border: 1px solid #e2e8f0;
   background: #fff;
   display: grid;
   gap: 16px;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
-}
-
-.carnet-player-card.is-warning {
-  border-color: #facc15;
-}
-
-.carnet-player-card.is-critical {
-  border-color: #f87171;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
 }
 
 .carnet-player-card__top {
@@ -335,18 +311,9 @@ select {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.carnet-badge.is-warning {
-  background: #fef9c3;
-  color: #a16207;
-}
-
-.carnet-badge.is-critical {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
 }
 
 .carnet-player-card__footer {

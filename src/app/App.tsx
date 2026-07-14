@@ -285,16 +285,13 @@ export function App() {
           <div className="carnet-hero__meta">
             <span className="carnet-source">Registro</span>
             <div className="carnet-stats" aria-label="Resumen">
-              <article className="carnet-stat">
-                <span>Jugadores</span>
+              <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
                 <strong>{stats.total}</strong>
               </article>
-              <article className="carnet-stat is-warning">
-                <span>En alerta</span>
+              <article className="carnet-stat" aria-label={`En alerta: ${stats.warning}`}>
                 <strong>{stats.warning}</strong>
               </article>
-              <article className="carnet-stat is-critical">
-                <span>Criticos</span>
+              <article className="carnet-stat" aria-label={`Críticos: ${stats.critical}`}>
                 <strong>{stats.critical}</strong>
               </article>
             </div>
@@ -356,7 +353,7 @@ export function App() {
                     <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
                   </div>
                   <span className={`carnet-badge is-${alertState}`}>
-                    {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Urgente"}
+                    {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
                   </span>
                 </div>
 
