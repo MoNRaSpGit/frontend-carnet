@@ -8,7 +8,7 @@ import {
 import type { CarnetPlayer } from "../features/carnet/carnet.types";
 
 type AlertState = "normal" | "warning" | "critical";
-type SourceState = "loading" | "online" | "local";
+type SourceState = "loading" | "online" | "offline";
 type SavingAction = "save" | "delete" | null;
 
 type EditingState = {
@@ -16,45 +16,6 @@ type EditingState = {
   playerName: string;
   expiryDate: string;
 } | null;
-
-function addDays(baseDate: Date, days: number) {
-  const next = new Date(baseDate);
-  next.setDate(next.getDate() + days);
-  return next;
-}
-
-function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-const today = new Date();
-
-const FALLBACK_PLAYERS: CarnetPlayer[] = [
-  {
-    id: 1,
-    name: "Juan Perez",
-    expiryDate: toDateInputValue(addDays(today, 45)),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 2,
-    name: "Ana Lopez",
-    expiryDate: toDateInputValue(addDays(today, 28)),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 3,
-    name: "Pablo Diaz",
-    expiryDate: toDateInputValue(addDays(today, 10)),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
 
 function formatDate(dateString: string) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -97,11 +58,12 @@ function sortPlayers(players: CarnetPlayer[]) {
 }
 
 export function App() {
-  const [players, setPlayers] = useState<CarnetPlayer[]>(FALLBACK_PLAYERS);
+  const [players, setPlayers] = useState<CarnetPlayer[]>([]);
   const [name, setName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [sourceState, setSourceState] = useState<SourceState>("loading");
   const [formError, setFormError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<EditingState>(null);
   const [editingError, setEditingError] = useState<string | null>(null);
   const [savingAction, setSavingAction] = useState<SavingAction>(null);
@@ -116,15 +78,17 @@ export function App() {
           return;
         }
 
-        setPlayers(sortPlayers(response.items.length > 0 ? response.items : FALLBACK_PLAYERS));
+        setPlayers(sortPlayers(response.items));
         setSourceState("online");
+        setListError(null);
       } catch {
         if (!active) {
           return;
         }
 
-        setPlayers(sortPlayers(FALLBACK_PLAYERS));
-        setSourceState("local");
+        setPlayers([]);
+        setSourceState("offline");
+        setListError("No se pudo conectar con la base de datos en este momento.");
       }
     }
 
@@ -167,20 +131,10 @@ export function App() {
       setName("");
       setExpiryDate("");
       setSourceState("online");
+      setListError(null);
     } catch {
-      const nextPlayer: CarnetPlayer = {
-        id: Date.now(),
-        name: trimmedName,
-        expiryDate,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      setPlayers((current) => sortPlayers([nextPlayer, ...current]));
-      setName("");
-      setExpiryDate("");
-      setSourceState("local");
-      setFormError("No se pudo guardar en el backend; quedo agregado en modo local por ahora.");
+      setFormError("No se pudo guardar en la base de datos.");
+      setSourceState("offline");
     }
   }
 
@@ -219,23 +173,8 @@ export function App() {
       setSourceState("online");
       setEditingPlayer(null);
     } catch {
-      setPlayers((current) =>
-        sortPlayers(
-          current.map((player) =>
-            player.id === editingPlayer.playerId
-              ? {
-                  ...player,
-                  name: trimmedName,
-                  expiryDate: editingPlayer.expiryDate,
-                  updatedAt: new Date().toISOString()
-                }
-              : player
-          )
-        )
-      );
-      setSourceState("local");
-      setEditingError("No se pudo guardar en el backend; quedo actualizado solo en pantalla.");
-      setEditingPlayer(null);
+      setEditingError("No se pudo guardar en la base de datos.");
+      setSourceState("offline");
     } finally {
       setSavingAction(null);
     }
@@ -260,10 +199,8 @@ export function App() {
       setSourceState("online");
       setEditingPlayer(null);
     } catch {
-      setPlayers((current) => current.filter((player) => player.id !== editingPlayer.playerId));
-      setSourceState("local");
-      setEditingError("No se pudo borrar en el backend; quedo eliminado solo en pantalla.");
-      setEditingPlayer(null);
+      setEditingError("No se pudo borrar en la base de datos.");
+      setSourceState("offline");
     } finally {
       setSavingAction(null);
     }
@@ -271,6 +208,7 @@ export function App() {
 
   const isSaving = savingAction === "save";
   const isDeleting = savingAction === "delete";
+  const hasPlayers = players.length > 0;
 
   return (
     <main className="carnet-shell">
@@ -283,17 +221,17 @@ export function App() {
           </div>
 
           <div className="carnet-hero__meta">
-            <span className="carnet-source">Registro</span>
+            <span className="carnet-source">{sourceState === "online" ? "Conectado" : sourceState === "offline" ? "Sin conexion" : "Cargando"}</span>
             <div className="carnet-stats" aria-label="Resumen">
               <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
                 <span>Jugadores</span>
                 <strong>{stats.total}</strong>
               </article>
-              <article className="carnet-stat" aria-label={`En alerta: ${stats.warning}`}>
+              <article className="carnet-stat" aria-label={`Alertas: ${stats.warning}`}>
                 <span>Alertas</span>
                 <strong>{stats.warning}</strong>
               </article>
-              <article className="carnet-stat" aria-label={`Críticos: ${stats.critical}`}>
+              <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
                 <span>Crítico</span>
                 <strong>{stats.critical}</strong>
               </article>
@@ -330,49 +268,59 @@ export function App() {
           </form>
 
           {formError ? <p className="carnet-form-error">{formError}</p> : null}
+          {listError ? <p className="carnet-form-error">{listError}</p> : null}
         </section>
 
         <section className="carnet-grid" aria-label="Lista de jugadores">
-          {players.map((player) => {
-            const daysLeft = getDaysUntil(player.expiryDate);
-            const alertState = getAlertState(daysLeft);
+          {hasPlayers ? (
+            players.map((player) => {
+              const daysLeft = getDaysUntil(player.expiryDate);
+              const alertState = getAlertState(daysLeft);
 
-            return (
-              <article
-                key={player.id}
-                className={`carnet-player-card is-${alertState}`}
-                onDoubleClick={() => openEditModal(player)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    openEditModal(player);
-                  }
-                }}
-              >
-                <div className="carnet-player-card__top">
-                  <div>
-                    <p className="carnet-player-card__name">{player.name}</p>
-                    <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
+              return (
+                <article
+                  key={player.id}
+                  className={`carnet-player-card is-${alertState}`}
+                  onDoubleClick={() => openEditModal(player)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      openEditModal(player);
+                    }
+                  }}
+                >
+                  <div className="carnet-player-card__top">
+                    <div>
+                      <p className="carnet-player-card__name">{player.name}</p>
+                      <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
+                    </div>
+                    <span className={`carnet-badge is-${alertState}`}>
+                      {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
+                    </span>
                   </div>
-                  <span className={`carnet-badge is-${alertState}`}>
-                    {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
-                  </span>
-                </div>
 
-                <div className="carnet-player-card__footer">
-                  <strong>{daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}</strong>
-                  <small>
-                    {alertState === "normal"
-                      ? "En estado normal."
-                      : alertState === "warning"
-                        ? "Queda cerca del vencimiento."
-                        : "Revisar de inmediato."}
-                  </small>
-                </div>
-              </article>
-            );
-          })}
+                  <div className="carnet-player-card__footer">
+                    <strong>
+                      {daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}
+                    </strong>
+                    <small>
+                      {alertState === "normal"
+                        ? "En estado normal."
+                        : alertState === "warning"
+                          ? "Queda cerca del vencimiento."
+                          : "Revisar de inmediato."}
+                    </small>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <article className="carnet-empty-state">
+              <h2>No hay jugadores cargados</h2>
+              <p>Usa el formulario de arriba para crear el primer registro y guardarlo en la base de datos.</p>
+            </article>
+          )}
         </section>
       </section>
 

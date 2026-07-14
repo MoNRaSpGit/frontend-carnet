@@ -356,6 +356,25 @@ select {
   line-height: 1.45;
 }
 
+.carnet-empty-state {
+  grid-column: 1 / -1;
+  padding: 28px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 20px;
+  background: #fff;
+  color: #475569;
+}
+
+.carnet-empty-state h2 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.carnet-empty-state p {
+  margin: 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 900px) {
   .carnet-stats,
   .carnet-grid {
