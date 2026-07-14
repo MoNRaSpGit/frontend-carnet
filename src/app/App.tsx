@@ -286,12 +286,15 @@ export function App() {
             <span className="carnet-source">Registro</span>
             <div className="carnet-stats" aria-label="Resumen">
               <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
+                <span>Jugadores</span>
                 <strong>{stats.total}</strong>
               </article>
               <article className="carnet-stat" aria-label={`En alerta: ${stats.warning}`}>
+                <span>Alertas</span>
                 <strong>{stats.warning}</strong>
               </article>
               <article className="carnet-stat" aria-label={`Críticos: ${stats.critical}`}>
+                <span>Crítico</span>
                 <strong>{stats.critical}</strong>
               </article>
             </div>
