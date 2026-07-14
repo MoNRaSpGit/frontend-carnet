@@ -1,0 +1,372 @@
+:root {
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.carnet-shell {
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent 24%),
+    linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.carnet-layout {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.carnet-hero,
+.carnet-card {
+  width: 100%;
+  padding: 28px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.carnet-hero {
+  display: grid;
+  gap: 18px;
+}
+
+.carnet-hero__meta {
+  display: grid;
+  gap: 12px;
+}
+
+.carnet-kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.carnet-note {
+  margin: 0;
+  max-width: 58ch;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.carnet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.carnet-stat {
+  padding: 16px;
+  border-radius: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  display: grid;
+  gap: 6px;
+}
+
+.carnet-stat span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-stat strong {
+  font-size: 1.6rem;
+}
+
+.carnet-stat.is-warning {
+  background: #fef9c3;
+  border-color: #facc15;
+}
+
+.carnet-stat.is-critical {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.carnet-source {
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.carnet-source {
+  background: #0f172a;
+  color: #facc15;
+}
+
+.carnet-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.carnet-card__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-card__header h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.carnet-form {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.carnet-field {
+  display: grid;
+  gap: 6px;
+}
+
+.carnet-field span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-field input {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: 0 14px;
+  color: #0f172a;
+}
+
+.carnet-field input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.24);
+  border-color: #60a5fa;
+}
+
+.carnet-submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+}
+
+.carnet-form-error {
+  margin: 12px 0 0;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.carnet-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 20;
+}
+
+.carnet-modal {
+  width: min(520px, 100%);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #dbe4ee;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  display: grid;
+  gap: 18px;
+}
+
+.carnet-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carnet-modal__header h2 {
+  margin: 4px 0 0;
+}
+
+.carnet-modal__close,
+.carnet-modal__ghost {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: 0 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.carnet-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.carnet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.carnet-player-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #dbe4ee;
+  background: #fff;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+}
+
+.carnet-player-card.is-warning {
+  border-color: #facc15;
+}
+
+.carnet-player-card.is-critical {
+  border-color: #f87171;
+}
+
+.carnet-player-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carnet-player-card__name {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.carnet-player-card__date {
+  margin: 0;
+  color: #475569;
+}
+
+.carnet-badge {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.carnet-badge.is-warning {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.carnet-badge.is-critical {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.carnet-player-card__footer {
+  display: grid;
+  gap: 6px;
+}
+
+.carnet-player-card__footer strong {
+  font-size: 1.05rem;
+}
+
+.carnet-player-card__footer small {
+  color: #475569;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .carnet-stats,
+  .carnet-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .carnet-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .carnet-shell {
+    padding: 16px;
+  }
+
+  .carnet-hero,
+  .carnet-card {
+    padding: 20px;
+  }
+
+  .carnet-card__header,
+  .carnet-player-card__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
