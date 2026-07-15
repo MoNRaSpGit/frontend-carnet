@@ -34,7 +34,17 @@ select {
   background:
     radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 30%),
     radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent 24%),
-    linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+  linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.carnet-topbar {
+  width: min(1080px, 100%);
+  margin: 0 auto 14px;
+  padding: 14px 18px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
 }
 
 .carnet-layout {
@@ -167,6 +177,10 @@ select {
   grid-template-columns: 1.2fr 1fr auto;
   gap: 12px;
   align-items: end;
+}
+
+.carnet-form--player {
+  grid-template-columns: 1.2fr 1fr 0.9fr 0.8fr auto;
 }
 
 .carnet-field {
@@ -392,6 +406,11 @@ select {
   padding-top: 8px;
 }
 
+.carnet-tabs--header {
+  padding-top: 0;
+  justify-content: flex-start;
+}
+
 .carnet-tab {
   min-height: 42px;
   padding: 0 16px;
@@ -407,6 +426,12 @@ select {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
+}
+
+.carnet-female-card {
+  min-height: 200px;
+  display: grid;
+  align-content: start;
 }
 
 .carnet-event {
@@ -640,11 +665,22 @@ select {
   .carnet-form {
     grid-template-columns: 1fr;
   }
+
+  .carnet-form--player {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
   .carnet-shell {
     padding: 12px;
+  }
+
+  .carnet-topbar {
+    width: min(1080px, 100%);
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 16px;
   }
 
   .carnet-hero,
@@ -681,6 +717,15 @@ select {
   .carnet-player-card__top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .carnet-tabs--header {
+    gap: 8px;
+  }
+
+  .carnet-tabs--header .carnet-tab {
+    flex: 1 1 0;
+    text-align: center;
   }
 
   .carnet-player-card {

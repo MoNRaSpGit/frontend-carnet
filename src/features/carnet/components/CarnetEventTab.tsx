@@ -1,5 +1,4 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { createCarnetPlayer } from "../carnet.api";
 import type { CarnetPlayer } from "../carnet.types";
 import type { CarnetEvent, CarnetEventDetail, CarnetEventRankingItem } from "../carnet.event.types";
 
@@ -12,7 +11,6 @@ type CarnetEventTabProps = {
   eventError: string | null;
   onCreateEvent: (name: string, endDate: string) => Promise<void>;
   onSelectEvent: (eventId: number) => void;
-  onCreatePlayer: typeof createCarnetPlayer;
   onAttachPlayer: (eventId: number, playerId: number, sales: number) => Promise<void>;
   onUpdatePlayerSales: (eventId: number, playerId: number, sales: number) => Promise<void>;
 };
@@ -77,15 +75,12 @@ export function CarnetEventTab({
   eventError,
   onCreateEvent,
   onSelectEvent,
-  onCreatePlayer,
   onAttachPlayer,
   onUpdatePlayerSales
 }: CarnetEventTabProps) {
   const [eventName, setEventName] = useState("");
   const [eventEndDate, setEventEndDate] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
-  const [newPlayerName, setNewPlayerName] = useState("");
-  const [newPlayerExpiry, setNewPlayerExpiry] = useState("");
   const [sales, setSales] = useState("1");
   const [formError, setFormError] = useState<string | null>(null);
   const [editingEntry, setEditingEntry] = useState<EditingEntryState>(null);
@@ -121,11 +116,16 @@ export function CarnetEventTab({
     }
   }
 
-  async function handleAddPlayer(eventObject: FormEvent<HTMLFormElement>) {
+  async function handleAttachExistingPlayer(eventObject: FormEvent<HTMLFormElement>) {
     eventObject.preventDefault();
 
     if (!activeEventId) {
       setFormError("Primero creá o elegí un evento.");
+      return;
+    }
+
+    if (!selectedPlayerId) {
+      setFormError("Elegí un jugador registrado.");
       return;
     }
 
@@ -135,36 +135,12 @@ export function CarnetEventTab({
       return;
     }
 
-    const trimmedNewPlayerName = newPlayerName.trim();
-
-    if (!trimmedNewPlayerName && !selectedPlayerId) {
-      setFormError("Elegí un jugador registrado o escribí uno nuevo.");
-      return;
-    }
-
-    if (trimmedNewPlayerName && !newPlayerExpiry) {
-      setFormError("Para registrar un jugador nuevo completá la fecha de vencimiento.");
-      return;
-    }
-
     setSaving(true);
     setFormError(null);
 
     try {
-      let playerId = Number(selectedPlayerId);
-
-      if (trimmedNewPlayerName) {
-        const createdPlayer = await onCreatePlayer({
-          name: trimmedNewPlayerName,
-          expiryDate: newPlayerExpiry
-        });
-        playerId = createdPlayer.item.id;
-      }
-
-      await onAttachPlayer(activeEventId, playerId, parsedSales);
+      await onAttachPlayer(activeEventId, Number(selectedPlayerId), parsedSales);
       setSelectedPlayerId("");
-      setNewPlayerName("");
-      setNewPlayerExpiry("");
       setSales("1");
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "No se pudo agregar el jugador al evento.");
@@ -217,6 +193,31 @@ export function CarnetEventTab({
         </div>
       </div>
 
+      <section className="carnet-event__overview">
+        <div className="carnet-event__section-head">
+          <p className="carnet-card__eyebrow">Eventos</p>
+          <h3>Elegir evento</h3>
+        </div>
+
+        <div className="carnet-event-list">
+          {events.length ? (
+            events.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`carnet-event-chip ${item.id === activeEventId ? "is-active" : ""}`}
+                onClick={() => onSelectEvent(item.id)}
+              >
+                <strong>{item.name}</strong>
+                <span>{item.endDate ? item.endDate : "Sin fecha"}</span>
+              </button>
+            ))
+          ) : (
+            <p className="carnet-empty-inline">Todavia no hay eventos cargados.</p>
+          )}
+        </div>
+      </section>
+
       <section className="carnet-card carnet-event__panel carnet-event__panel--full">
         <div className="carnet-card__header">
           <div>
@@ -225,7 +226,7 @@ export function CarnetEventTab({
           </div>
         </div>
 
-        <form className="carnet-form carnet-form--event-player" onSubmit={handleAddPlayer}>
+        <form className="carnet-form carnet-form--event-player" onSubmit={handleAttachExistingPlayer}>
           <label className="carnet-field">
             <span>Jugador registrado</span>
             <select value={selectedPlayerId} onChange={(event) => setSelectedPlayerId(event.target.value)}>
@@ -236,16 +237,6 @@ export function CarnetEventTab({
                 </option>
               ))}
             </select>
-          </label>
-
-          <label className="carnet-field">
-            <span>O registrar nuevo</span>
-            <input value={newPlayerName} onChange={(event) => setNewPlayerName(event.target.value)} placeholder="Juan Perez" />
-          </label>
-
-          <label className="carnet-field">
-            <span>Vencimiento nuevo</span>
-            <input type="date" value={newPlayerExpiry} onChange={(event) => setNewPlayerExpiry(event.target.value)} />
           </label>
 
           <label className="carnet-field">

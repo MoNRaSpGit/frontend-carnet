@@ -13,19 +13,28 @@ import {
   upsertCarnetEventPlayer
 } from "../features/carnet/carnet.event.api";
 import type { CarnetEvent, CarnetEventDetail } from "../features/carnet/carnet.event.types";
-import type { CarnetPlayer } from "../features/carnet/carnet.types";
+import type { CarnetPlayer, CarnetSex } from "../features/carnet/carnet.types";
 import { CarnetEventTab } from "../features/carnet/components/CarnetEventTab";
 
 type AlertState = "normal" | "warning" | "critical";
 type SourceState = "loading" | "online" | "offline";
 type SavingAction = "save" | "delete" | null;
-type TabMode = "players" | "events";
+type TabMode = "players" | "male" | "female" | "events";
 
 type EditingState = {
   playerId: number;
   playerName: string;
   expiryDate: string;
+  sex: CarnetSex;
+  sales: string;
 } | null;
+
+type PlayerFormState = {
+  name: string;
+  expiryDate: string;
+  sex: CarnetSex;
+  sales: string;
+};
 
 function formatDate(dateString: string) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -36,7 +45,7 @@ function formatDate(dateString: string) {
   }).format(date);
 }
 
-function formatCount(value: number) {
+function formatNumber(value: number) {
   return new Intl.NumberFormat("es-UY").format(value);
 }
 
@@ -52,14 +61,8 @@ function getDaysUntil(dateString: string) {
 }
 
 function getAlertState(daysLeft: number): AlertState {
-  if (daysLeft <= 21) {
-    return "critical";
-  }
-
-  if (daysLeft <= 30) {
-    return "warning";
-  }
-
+  if (daysLeft <= 21) return "critical";
+  if (daysLeft <= 30) return "warning";
   return "normal";
 }
 
@@ -73,6 +76,10 @@ function sortPlayers(players: CarnetPlayer[]) {
 
 function sortEvents(events: CarnetEvent[]) {
   return [...events].sort((left, right) => right.id - left.id);
+}
+
+function sexLabel(sex: CarnetSex) {
+  return sex === "femenino" ? "Femenino" : "Masculino";
 }
 
 export function App() {
@@ -89,8 +96,38 @@ export function App() {
   const [editingPlayer, setEditingPlayer] = useState<EditingState>(null);
   const [editingError, setEditingError] = useState<string | null>(null);
   const [savingAction, setSavingAction] = useState<SavingAction>(null);
-  const [name, setName] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const [playerForm, setPlayerForm] = useState<PlayerFormState>({
+    name: "",
+    expiryDate: "",
+    sex: "masculino",
+    sales: ""
+  });
+
+  function syncActiveEventWithPlayer(nextPlayer: CarnetPlayer, mode: "upsert" | "delete") {
+    setActiveEventDetail((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextPlayers =
+        mode === "delete"
+          ? current.players.filter((player) => player.id !== nextPlayer.id)
+          : current.players.map((player) => (player.id === nextPlayer.id ? nextPlayer : player));
+
+      const nextRanking =
+        mode === "delete"
+          ? current.ranking
+              .filter((entry) => entry.playerId !== nextPlayer.id)
+              .map((entry, index) => ({ ...entry, position: index + 1 }))
+          : current.ranking.map((entry) => (entry.playerId === nextPlayer.id ? { ...entry, playerName: nextPlayer.name } : entry));
+
+      return {
+        event: current.event,
+        players: nextPlayers,
+        ranking: nextRanking
+      };
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -98,17 +135,13 @@ export function App() {
     async function loadPlayers() {
       try {
         const response = await listCarnetPlayers();
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setPlayers(sortPlayers(response.items));
         setSourceState("online");
         setListError(null);
       } catch {
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setPlayers([]);
         setSourceState("offline");
@@ -129,18 +162,13 @@ export function App() {
     async function loadEvents() {
       try {
         const response = await listCarnetEvents();
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
-        const nextEvents = sortEvents(response.items);
-        setEvents(nextEvents);
+        setEvents(sortEvents(response.items));
         setEventError(null);
         setSourceState("online");
       } catch {
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setEvents([]);
         setEventError("No se pudieron cargar los eventos en este momento.");
@@ -175,17 +203,13 @@ export function App() {
 
       try {
         const response = await getCarnetEvent(eventId);
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setActiveEventDetail(response.item);
         setEventError(null);
         setSourceState("online");
       } catch {
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setActiveEventDetail(null);
         setEventError("No se pudo cargar el detalle del evento.");
@@ -214,61 +238,38 @@ export function App() {
 
   const stats = useMemo(() => {
     const critical = players.filter((player) => getAlertState(getDaysUntil(player.expiryDate)) === "critical").length;
-    const warning = players.filter((player) => getAlertState(getDaysUntil(player.expiryDate)) === "warning").length;
+    const female = players.filter((player) => player.sex === "femenino").length;
+    const male = players.filter((player) => player.sex === "masculino").length;
 
     return {
       total: players.length,
-      warning,
+      female,
+      male,
       critical,
       events: events.length,
       eventSales: activeEventDetail?.event.totalSales ?? 0
     };
   }, [activeEventDetail, events.length, players]);
 
-  async function refreshActiveEvent(eventId: number) {
-    try {
-      const response = await getCarnetEvent(eventId);
-      setActiveEventDetail(response.item);
-      setEvents((current) =>
-        sortEvents(
-          current.map((event) => {
-            if (event.id !== response.item.event.id) {
-              return event;
-            }
-
-            return response.item.event;
-          })
-        )
-      );
-      setEventError(null);
-      setSourceState("online");
-    } catch {
-      setEventError("No se pudo refrescar el ranking del evento.");
-      setSourceState("offline");
-    }
-  }
-
   async function handleCreateEvent(nameValue: string, endDate: string) {
     const response = await createCarnetEvent(nameValue, endDate);
     setEvents((current) => sortEvents([response.item, ...current.filter((event) => event.id !== response.item.id)]));
     setActiveEventId(response.item.id);
     setActiveTab("events");
-    await refreshActiveEvent(response.item.id);
+    setActiveEventDetail({
+      event: response.item,
+      players,
+      ranking: []
+    });
+    setEventError(null);
+    setSourceState("online");
   }
 
   async function handleAttachEventPlayer(eventId: number, playerId: number, sales: number) {
     const response = await upsertCarnetEventPlayer(eventId, playerId, sales);
     setActiveEventDetail(response.item);
     setEvents((current) =>
-      sortEvents(
-        current.map((event) => {
-          if (event.id !== response.item.event.id) {
-            return event;
-          }
-
-          return response.item.event;
-        })
-      )
+      sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event)))
     );
     setSourceState("online");
   }
@@ -277,25 +278,23 @@ export function App() {
     const response = await updateCarnetEventPlayer(eventId, playerId, sales);
     setActiveEventDetail(response.item);
     setEvents((current) =>
-      sortEvents(
-        current.map((event) => {
-          if (event.id !== response.item.event.id) {
-            return event;
-          }
-
-          return response.item.event;
-        })
-      )
+      sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event)))
     );
     setSourceState("online");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmedName = name.trim();
+    const trimmedName = playerForm.name.trim();
+    const parsedSales = playerForm.sales.trim() ? Number.parseInt(playerForm.sales, 10) : null;
 
-    if (!trimmedName || !expiryDate) {
-      setFormError("Completa nombre y fecha antes de guardar.");
+    if (!trimmedName || !playerForm.expiryDate || !playerForm.sex) {
+      setFormError("Completa nombre, vencimiento y sexo antes de guardar.");
+      return;
+    }
+
+    if (playerForm.sales.trim() && (Number.isNaN(parsedSales) || (parsedSales ?? 0) < 0)) {
+      setFormError("Ventas debe ser 0 o más.");
       return;
     }
 
@@ -304,18 +303,21 @@ export function App() {
     try {
       const response = await createCarnetPlayer({
         name: trimmedName,
-        expiryDate
+        expiryDate: playerForm.expiryDate,
+        sex: playerForm.sex,
+        sales: parsedSales
       });
 
       setPlayers((current) => sortPlayers([response.item, ...current.filter((player) => player.id !== response.item.id)]));
-      setName("");
-      setExpiryDate("");
+      syncActiveEventWithPlayer(response.item, "upsert");
+      setPlayerForm({
+        name: "",
+        expiryDate: "",
+        sex: "masculino",
+        sales: ""
+      });
       setSourceState("online");
       setListError(null);
-
-      if (activeEventId !== null) {
-        await refreshActiveEvent(activeEventId);
-      }
     } catch {
       setFormError("No se pudo guardar en la base de datos.");
       setSourceState("offline");
@@ -327,18 +329,25 @@ export function App() {
     setEditingPlayer({
       playerId: player.id,
       playerName: player.name,
-      expiryDate: player.expiryDate
+      expiryDate: player.expiryDate,
+      sex: player.sex,
+      sales: player.sales === null ? "" : String(player.sales)
     });
   }
 
   async function saveEdit() {
-    if (!editingPlayer) {
+    if (!editingPlayer) return;
+
+    const trimmedName = editingPlayer.playerName.trim();
+    const parsedSales = editingPlayer.sales.trim() ? Number.parseInt(editingPlayer.sales, 10) : null;
+
+    if (!trimmedName || !editingPlayer.expiryDate) {
+      setEditingError("Completa nombre y fecha antes de guardar.");
       return;
     }
 
-    const trimmedName = editingPlayer.playerName.trim();
-    if (!trimmedName || !editingPlayer.expiryDate) {
-      setEditingError("Completa nombre y fecha antes de guardar.");
+    if (editingPlayer.sales.trim() && (Number.isNaN(parsedSales) || (parsedSales ?? 0) < 0)) {
+      setEditingError("Ventas debe ser 0 o más.");
       return;
     }
 
@@ -348,18 +357,17 @@ export function App() {
     try {
       const response = await updateCarnetPlayer(editingPlayer.playerId, {
         name: trimmedName,
-        expiryDate: editingPlayer.expiryDate
+        expiryDate: editingPlayer.expiryDate,
+        sex: editingPlayer.sex,
+        sales: parsedSales
       });
 
       setPlayers((current) =>
         sortPlayers(current.map((player) => (player.id === response.item.id ? response.item : player)))
       );
+      syncActiveEventWithPlayer(response.item, "upsert");
       setSourceState("online");
       setEditingPlayer(null);
-
-      if (activeEventId !== null) {
-        await refreshActiveEvent(activeEventId);
-      }
     } catch {
       setEditingError("No se pudo guardar en la base de datos.");
       setSourceState("offline");
@@ -369,14 +377,10 @@ export function App() {
   }
 
   async function deletePlayer() {
-    if (!editingPlayer) {
-      return;
-    }
+    if (!editingPlayer) return;
 
     const confirmed = window.confirm(`Eliminar a ${editingPlayer.playerName}?`);
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     setSavingAction("delete");
     setEditingError(null);
@@ -384,12 +388,20 @@ export function App() {
     try {
       await deleteCarnetPlayer(editingPlayer.playerId);
       setPlayers((current) => current.filter((player) => player.id !== editingPlayer.playerId));
+      syncActiveEventWithPlayer(
+        {
+          id: editingPlayer.playerId,
+          name: editingPlayer.playerName,
+          expiryDate: editingPlayer.expiryDate,
+          sex: editingPlayer.sex,
+          sales: editingPlayer.sales ? Number.parseInt(editingPlayer.sales, 10) : null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        "delete"
+      );
       setSourceState("online");
       setEditingPlayer(null);
-
-      if (activeEventId !== null) {
-        await refreshActiveEvent(activeEventId);
-      }
     } catch {
       setEditingError("No se pudo borrar en la base de datos.");
       setSourceState("offline");
@@ -400,10 +412,191 @@ export function App() {
 
   const isSaving = savingAction === "save";
   const isDeleting = savingAction === "delete";
-  const hasPlayers = players.length > 0;
+
+  const malePlayers = players.filter((player) => player.sex === "masculino");
+  const femalePlayers = players.filter((player) => player.sex === "femenino");
+
+  const renderPlayerGrid = (items: CarnetPlayer[]) => {
+    if (!items.length) {
+      return (
+        <article className="carnet-empty-state">
+          <h2>No hay jugadores cargados</h2>
+          <p>Usa el formulario de arriba para crear el primer registro y guardarlo en la base de datos.</p>
+        </article>
+      );
+    }
+
+    return items.map((player) => {
+      const daysLeft = getDaysUntil(player.expiryDate);
+      const alertState = getAlertState(daysLeft);
+
+      return (
+        <article
+          key={player.id}
+          className={`carnet-player-card is-${alertState}`}
+          onDoubleClick={() => openEditModal(player)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              openEditModal(player);
+            }
+          }}
+        >
+          <div className="carnet-player-card__top">
+            <div>
+              <p className="carnet-player-card__name">{player.name}</p>
+              <p className="carnet-player-card__date">{sexLabel(player.sex)} · Vence {formatDate(player.expiryDate)}</p>
+            </div>
+            <span className={`carnet-badge is-${alertState}`}>
+              {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
+            </span>
+          </div>
+
+          <div className="carnet-player-card__footer">
+            <strong>{daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}</strong>
+            <small>{player.sales !== null ? `Ventas ${formatNumber(player.sales)}` : "Sin ventas cargadas."}</small>
+          </div>
+        </article>
+      );
+    });
+  };
+
+  const tabContent =
+    activeTab === "players" ? (
+      <section className="carnet-card carnet-form-card" aria-label="Alta de jugador">
+        <div className="carnet-card__header">
+          <div>
+            <p className="carnet-card__eyebrow">Nuevo jugador</p>
+            <h2>Ingresar datos</h2>
+          </div>
+        </div>
+
+        <form className="carnet-form carnet-form--player" onSubmit={handleSubmit}>
+          <label className="carnet-field">
+            <span>Nombre</span>
+            <input
+              value={playerForm.name}
+              onChange={(event) => setPlayerForm((current) => ({ ...current, name: event.target.value }))}
+              placeholder="Ej: Martin Rodriguez"
+            />
+          </label>
+
+          <label className="carnet-field">
+            <span>Vencimiento carnet</span>
+            <input
+              type="date"
+              value={playerForm.expiryDate}
+              onChange={(event) => setPlayerForm((current) => ({ ...current, expiryDate: event.target.value }))}
+            />
+          </label>
+
+          <label className="carnet-field">
+            <span>Sexo</span>
+            <select
+              value={playerForm.sex}
+              onChange={(event) =>
+                setPlayerForm((current) => ({ ...current, sex: event.target.value as CarnetSex }))
+              }
+            >
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+            </select>
+          </label>
+
+          <label className="carnet-field">
+            <span>Ventas opcional</span>
+            <input
+              type="number"
+              min="0"
+              value={playerForm.sales}
+              onChange={(event) => setPlayerForm((current) => ({ ...current, sales: event.target.value }))}
+              placeholder="0"
+            />
+          </label>
+
+          <button type="submit" className="carnet-submit">
+            Agregar jugador
+          </button>
+        </form>
+
+        {formError ? <p className="carnet-form-error">{formError}</p> : null}
+        {listError ? <p className="carnet-form-error">{listError}</p> : null}
+      </section>
+    ) : activeTab === "male" ? (
+      <section className="carnet-card" aria-label="Jugadores masculinos">
+        <div className="carnet-card__header">
+          <div>
+            <p className="carnet-card__eyebrow">Masculino</p>
+            <h2>Jugadores</h2>
+          </div>
+        </div>
+        <section className="carnet-grid">{renderPlayerGrid(malePlayers)}</section>
+      </section>
+    ) : activeTab === "female" ? (
+      <section className="carnet-card" aria-label="Jugadoras femeninas">
+        <div className="carnet-card__header">
+          <div>
+            <p className="carnet-card__eyebrow">Femenino</p>
+            <h2>Jugadoras</h2>
+          </div>
+        </div>
+        <section className="carnet-grid">{renderPlayerGrid(femalePlayers)}</section>
+      </section>
+    ) : (
+      <CarnetEventTab
+        players={players}
+        events={events}
+        activeEventId={activeEventId}
+        activeEventDetail={activeEventDetail}
+        loadingEvent={loadingEvent}
+        eventError={eventError}
+        onCreateEvent={handleCreateEvent}
+        onSelectEvent={setActiveEventId}
+        onAttachPlayer={handleAttachEventPlayer}
+        onUpdatePlayerSales={handleUpdateEventPlayerSales}
+      />
+    );
 
   return (
     <main className="carnet-shell">
+      <header className="carnet-topbar">
+        <nav className="carnet-tabs carnet-tabs--header" role="tablist" aria-label="Secciones">
+          <button
+            type="button"
+            className={`carnet-tab ${activeTab === "players" ? "is-active" : ""}`}
+            aria-pressed={activeTab === "players"}
+            onClick={() => setActiveTab("players")}
+          >
+            Jugadores
+          </button>
+          <button
+            type="button"
+            className={`carnet-tab ${activeTab === "male" ? "is-active" : ""}`}
+            aria-pressed={activeTab === "male"}
+            onClick={() => setActiveTab("male")}
+          >
+            Masculino
+          </button>
+          <button
+            type="button"
+            className={`carnet-tab ${activeTab === "female" ? "is-active" : ""}`}
+            aria-pressed={activeTab === "female"}
+            onClick={() => setActiveTab("female")}
+          >
+            Femenino
+          </button>
+          <button
+            type="button"
+            className={`carnet-tab ${activeTab === "events" ? "is-active" : ""}`}
+            aria-pressed={activeTab === "events"}
+            onClick={() => setActiveTab("events")}
+          >
+            Evento
+          </button>
+        </nav>
+      </header>
+
       <section className="carnet-layout">
         <header className="carnet-hero">
           <div className="carnet-hero__top">
@@ -413,146 +606,35 @@ export function App() {
               <p className="carnet-note">Gestion simple de jugadores, eventos y ranking de ventas, todo guardado en la base de datos.</p>
             </div>
 
-            <div className="carnet-hero__meta">
-              <span className="carnet-source">
-                {sourceState === "online" ? "Conectado" : sourceState === "offline" ? "Sin conexion" : "Cargando"}
-              </span>
-              <div className="carnet-stats" aria-label="Resumen">
-                <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
-                  <span>Jugadores</span>
-                  <strong>{stats.total}</strong>
-                </article>
-                <article className="carnet-stat" aria-label={`Alertas: ${stats.warning}`}>
-                  <span>Alertas</span>
-                  <strong>{stats.warning}</strong>
-                </article>
-                <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
-                  <span>Crítico</span>
-                  <strong>{stats.critical}</strong>
-                </article>
-                <article className="carnet-stat" aria-label={`Eventos: ${stats.events}`}>
-                  <span>Eventos</span>
-                  <strong>{stats.events}</strong>
-                </article>
+            {activeTab === "players" ? (
+              <div className="carnet-hero__meta">
+                <span className="carnet-source">
+                  {sourceState === "online" ? "Conectado" : sourceState === "offline" ? "Sin conexion" : "Cargando"}
+                </span>
+                <div className="carnet-stats" aria-label="Resumen">
+                  <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
+                    <span>Jugadores</span>
+                    <strong>{stats.total}</strong>
+                  </article>
+                  <article className="carnet-stat" aria-label={`Masculino: ${stats.male}`}>
+                    <span>Masculino</span>
+                    <strong>{stats.male}</strong>
+                  </article>
+                  <article className="carnet-stat" aria-label={`Femenino: ${stats.female}`}>
+                    <span>Femenino</span>
+                    <strong>{stats.female}</strong>
+                  </article>
+                  <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
+                    <span>Crítico</span>
+                    <strong>{stats.critical}</strong>
+                  </article>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div className="carnet-tabs" role="tablist" aria-label="Secciones">
-            <button
-              type="button"
-              className={`carnet-tab ${activeTab === "players" ? "is-active" : ""}`}
-              aria-pressed={activeTab === "players"}
-              onClick={() => setActiveTab("players")}
-            >
-              Jugadores
-            </button>
-            <button
-              type="button"
-              className={`carnet-tab ${activeTab === "events" ? "is-active" : ""}`}
-              aria-pressed={activeTab === "events"}
-              onClick={() => setActiveTab("events")}
-            >
-              Evento
-            </button>
+            ) : null}
           </div>
         </header>
 
-        {activeTab === "players" ? (
-          <>
-            <section className="carnet-card carnet-form-card" aria-label="Alta de jugador">
-              <div className="carnet-card__header">
-                <div>
-                  <p className="carnet-card__eyebrow">Nuevo jugador</p>
-                  <h2>Ingresar datos</h2>
-                </div>
-              </div>
-
-              <form className="carnet-form" onSubmit={handleSubmit}>
-                <label className="carnet-field">
-                  <span>Nombre</span>
-                  <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej: Martin Rodriguez" />
-                </label>
-
-                <label className="carnet-field">
-                  <span>Vencimiento</span>
-                  <input type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} />
-                </label>
-
-                <button type="submit" className="carnet-submit">
-                  Agregar jugador
-                </button>
-              </form>
-
-              {formError ? <p className="carnet-form-error">{formError}</p> : null}
-              {listError ? <p className="carnet-form-error">{listError}</p> : null}
-            </section>
-
-            <section className="carnet-grid" aria-label="Lista de jugadores">
-              {hasPlayers ? (
-                players.map((player) => {
-                  const daysLeft = getDaysUntil(player.expiryDate);
-                  const alertState = getAlertState(daysLeft);
-
-                  return (
-                    <article
-                      key={player.id}
-                      className={`carnet-player-card is-${alertState}`}
-                      onDoubleClick={() => openEditModal(player)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          openEditModal(player);
-                        }
-                      }}
-                    >
-                      <div className="carnet-player-card__top">
-                        <div>
-                          <p className="carnet-player-card__name">{player.name}</p>
-                          <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
-                        </div>
-                        <span className={`carnet-badge is-${alertState}`}>
-                          {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
-                        </span>
-                      </div>
-
-                      <div className="carnet-player-card__footer">
-                        <strong>{daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}</strong>
-                        <small>
-                          {alertState === "normal"
-                            ? "En estado normal."
-                            : alertState === "warning"
-                              ? "Queda cerca del vencimiento."
-                              : "Revisar de inmediato."}
-                        </small>
-                      </div>
-                    </article>
-                  );
-                })
-              ) : (
-                <article className="carnet-empty-state">
-                  <h2>No hay jugadores cargados</h2>
-                  <p>Usa el formulario de arriba para crear el primer registro y guardarlo en la base de datos.</p>
-                </article>
-              )}
-            </section>
-          </>
-        ) : (
-          <CarnetEventTab
-            players={players}
-            events={events}
-            activeEventId={activeEventId}
-            activeEventDetail={activeEventDetail}
-            loadingEvent={loadingEvent}
-            eventError={eventError}
-            onCreateEvent={handleCreateEvent}
-            onSelectEvent={setActiveEventId}
-            onCreatePlayer={createCarnetPlayer}
-            onAttachPlayer={handleAttachEventPlayer}
-            onUpdatePlayerSales={handleUpdateEventPlayerSales}
-          />
-        )}
+        {tabContent}
       </section>
 
       {editingPlayer ? (
@@ -585,12 +667,39 @@ export function App() {
             </label>
 
             <label className="carnet-field">
-              <span>Vencimiento</span>
+              <span>Vencimiento carnet</span>
               <input
                 type="date"
                 value={editingPlayer.expiryDate}
                 onChange={(event) =>
                   setEditingPlayer((current) => (current ? { ...current, expiryDate: event.target.value } : current))
+                }
+              />
+            </label>
+
+            <label className="carnet-field">
+              <span>Sexo</span>
+              <select
+                value={editingPlayer.sex}
+                onChange={(event) =>
+                  setEditingPlayer((current) =>
+                    current ? { ...current, sex: event.target.value as CarnetSex } : current
+                  )
+                }
+              >
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+              </select>
+            </label>
+
+            <label className="carnet-field">
+              <span>Ventas opcional</span>
+              <input
+                type="number"
+                min="0"
+                value={editingPlayer.sales}
+                onChange={(event) =>
+                  setEditingPlayer((current) => (current ? { ...current, sales: event.target.value } : current))
                 }
               />
             </label>
