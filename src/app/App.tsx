@@ -5,11 +5,21 @@ import {
   listCarnetPlayers,
   updateCarnetPlayer
 } from "../features/carnet/carnet.api";
+import {
+  createCarnetEvent,
+  getCarnetEvent,
+  listCarnetEvents,
+  updateCarnetEventPlayer,
+  upsertCarnetEventPlayer
+} from "../features/carnet/carnet.event.api";
+import type { CarnetEvent, CarnetEventDetail } from "../features/carnet/carnet.event.types";
 import type { CarnetPlayer } from "../features/carnet/carnet.types";
+import { CarnetEventTab } from "../features/carnet/components/CarnetEventTab";
 
 type AlertState = "normal" | "warning" | "critical";
 type SourceState = "loading" | "online" | "offline";
 type SavingAction = "save" | "delete" | null;
+type TabMode = "players" | "events";
 
 type EditingState = {
   playerId: number;
@@ -24,6 +34,10 @@ function formatDate(dateString: string) {
     month: "2-digit",
     year: "numeric"
   }).format(date);
+}
+
+function formatCount(value: number) {
+  return new Intl.NumberFormat("es-UY").format(value);
 }
 
 function getDaysUntil(dateString: string) {
@@ -57,16 +71,26 @@ function sortPlayers(players: CarnetPlayer[]) {
   });
 }
 
+function sortEvents(events: CarnetEvent[]) {
+  return [...events].sort((left, right) => right.id - left.id);
+}
+
 export function App() {
+  const [activeTab, setActiveTab] = useState<TabMode>("players");
   const [players, setPlayers] = useState<CarnetPlayer[]>([]);
-  const [name, setName] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const [events, setEvents] = useState<CarnetEvent[]>([]);
+  const [activeEventId, setActiveEventId] = useState<number | null>(null);
+  const [activeEventDetail, setActiveEventDetail] = useState<CarnetEventDetail | null>(null);
+  const [loadingEvent, setLoadingEvent] = useState(false);
   const [sourceState, setSourceState] = useState<SourceState>("loading");
   const [formError, setFormError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [eventError, setEventError] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<EditingState>(null);
   const [editingError, setEditingError] = useState<string | null>(null);
   const [savingAction, setSavingAction] = useState<SavingAction>(null);
+  const [name, setName] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -99,6 +123,95 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadEvents() {
+      try {
+        const response = await listCarnetEvents();
+        if (!active) {
+          return;
+        }
+
+        const nextEvents = sortEvents(response.items);
+        setEvents(nextEvents);
+        setEventError(null);
+        setSourceState("online");
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setEvents([]);
+        setEventError("No se pudieron cargar los eventos en este momento.");
+        setSourceState("offline");
+      }
+    }
+
+    void loadEvents();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!events.length) {
+      setActiveEventId(null);
+      setActiveEventDetail(null);
+      return;
+    }
+
+    if (activeEventId === null || !events.some((event) => event.id === activeEventId)) {
+      setActiveEventId(events[0].id);
+    }
+  }, [activeEventId, events]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadEventDetail(eventId: number) {
+      setLoadingEvent(true);
+
+      try {
+        const response = await getCarnetEvent(eventId);
+        if (!active) {
+          return;
+        }
+
+        setActiveEventDetail(response.item);
+        setEventError(null);
+        setSourceState("online");
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setActiveEventDetail(null);
+        setEventError("No se pudo cargar el detalle del evento.");
+        setSourceState("offline");
+      } finally {
+        if (active) {
+          setLoadingEvent(false);
+        }
+      }
+    }
+
+    if (activeEventId === null) {
+      setActiveEventDetail(null);
+      setLoadingEvent(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    void loadEventDetail(activeEventId);
+
+    return () => {
+      active = false;
+    };
+  }, [activeEventId]);
+
   const stats = useMemo(() => {
     const critical = players.filter((player) => getAlertState(getDaysUntil(player.expiryDate)) === "critical").length;
     const warning = players.filter((player) => getAlertState(getDaysUntil(player.expiryDate)) === "warning").length;
@@ -106,9 +219,76 @@ export function App() {
     return {
       total: players.length,
       warning,
-      critical
+      critical,
+      events: events.length,
+      eventSales: activeEventDetail?.event.totalSales ?? 0
     };
-  }, [players]);
+  }, [activeEventDetail, events.length, players]);
+
+  async function refreshActiveEvent(eventId: number) {
+    try {
+      const response = await getCarnetEvent(eventId);
+      setActiveEventDetail(response.item);
+      setEvents((current) =>
+        sortEvents(
+          current.map((event) => {
+            if (event.id !== response.item.event.id) {
+              return event;
+            }
+
+            return response.item.event;
+          })
+        )
+      );
+      setEventError(null);
+      setSourceState("online");
+    } catch {
+      setEventError("No se pudo refrescar el ranking del evento.");
+      setSourceState("offline");
+    }
+  }
+
+  async function handleCreateEvent(nameValue: string, endDate: string) {
+    const response = await createCarnetEvent(nameValue, endDate);
+    setEvents((current) => sortEvents([response.item, ...current.filter((event) => event.id !== response.item.id)]));
+    setActiveEventId(response.item.id);
+    setActiveTab("events");
+    await refreshActiveEvent(response.item.id);
+  }
+
+  async function handleAttachEventPlayer(eventId: number, playerId: number, sales: number) {
+    const response = await upsertCarnetEventPlayer(eventId, playerId, sales);
+    setActiveEventDetail(response.item);
+    setEvents((current) =>
+      sortEvents(
+        current.map((event) => {
+          if (event.id !== response.item.event.id) {
+            return event;
+          }
+
+          return response.item.event;
+        })
+      )
+    );
+    setSourceState("online");
+  }
+
+  async function handleUpdateEventPlayerSales(eventId: number, playerId: number, sales: number) {
+    const response = await updateCarnetEventPlayer(eventId, playerId, sales);
+    setActiveEventDetail(response.item);
+    setEvents((current) =>
+      sortEvents(
+        current.map((event) => {
+          if (event.id !== response.item.event.id) {
+            return event;
+          }
+
+          return response.item.event;
+        })
+      )
+    );
+    setSourceState("online");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -132,6 +312,10 @@ export function App() {
       setExpiryDate("");
       setSourceState("online");
       setListError(null);
+
+      if (activeEventId !== null) {
+        await refreshActiveEvent(activeEventId);
+      }
     } catch {
       setFormError("No se pudo guardar en la base de datos.");
       setSourceState("offline");
@@ -172,6 +356,10 @@ export function App() {
       );
       setSourceState("online");
       setEditingPlayer(null);
+
+      if (activeEventId !== null) {
+        await refreshActiveEvent(activeEventId);
+      }
     } catch {
       setEditingError("No se pudo guardar en la base de datos.");
       setSourceState("offline");
@@ -198,6 +386,10 @@ export function App() {
       setPlayers((current) => current.filter((player) => player.id !== editingPlayer.playerId));
       setSourceState("online");
       setEditingPlayer(null);
+
+      if (activeEventId !== null) {
+        await refreshActiveEvent(activeEventId);
+      }
     } catch {
       setEditingError("No se pudo borrar en la base de datos.");
       setSourceState("offline");
@@ -214,114 +406,153 @@ export function App() {
     <main className="carnet-shell">
       <section className="carnet-layout">
         <header className="carnet-hero">
-          <div>
-            <p className="carnet-kicker">Registro de carnet</p>
-            <h1>Equipo de Peñarol</h1>
-            <p className="carnet-note">Gestion simple de jugadores con vencimientos, edicion y bajas rapidas.</p>
+          <div className="carnet-hero__top">
+            <div>
+              <p className="carnet-kicker">Registro de carnet</p>
+              <h1>Equipo de Peñarol</h1>
+              <p className="carnet-note">Gestion simple de jugadores, eventos y ranking de ventas, todo guardado en la base de datos.</p>
+            </div>
+
+            <div className="carnet-hero__meta">
+              <span className="carnet-source">
+                {sourceState === "online" ? "Conectado" : sourceState === "offline" ? "Sin conexion" : "Cargando"}
+              </span>
+              <div className="carnet-stats" aria-label="Resumen">
+                <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
+                  <span>Jugadores</span>
+                  <strong>{stats.total}</strong>
+                </article>
+                <article className="carnet-stat" aria-label={`Alertas: ${stats.warning}`}>
+                  <span>Alertas</span>
+                  <strong>{stats.warning}</strong>
+                </article>
+                <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
+                  <span>Crítico</span>
+                  <strong>{stats.critical}</strong>
+                </article>
+                <article className="carnet-stat" aria-label={`Eventos: ${stats.events}`}>
+                  <span>Eventos</span>
+                  <strong>{stats.events}</strong>
+                </article>
+              </div>
+            </div>
           </div>
 
-          <div className="carnet-hero__meta">
-            <span className="carnet-source">{sourceState === "online" ? "Conectado" : sourceState === "offline" ? "Sin conexion" : "Cargando"}</span>
-            <div className="carnet-stats" aria-label="Resumen">
-              <article className="carnet-stat" aria-label={`Jugadores: ${stats.total}`}>
-                <span>Jugadores</span>
-                <strong>{stats.total}</strong>
-              </article>
-              <article className="carnet-stat" aria-label={`Alertas: ${stats.warning}`}>
-                <span>Alertas</span>
-                <strong>{stats.warning}</strong>
-              </article>
-              <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
-                <span>Crítico</span>
-                <strong>{stats.critical}</strong>
-              </article>
-            </div>
+          <div className="carnet-tabs" role="tablist" aria-label="Secciones">
+            <button
+              type="button"
+              className={`carnet-tab ${activeTab === "players" ? "is-active" : ""}`}
+              aria-pressed={activeTab === "players"}
+              onClick={() => setActiveTab("players")}
+            >
+              Jugadores
+            </button>
+            <button
+              type="button"
+              className={`carnet-tab ${activeTab === "events" ? "is-active" : ""}`}
+              aria-pressed={activeTab === "events"}
+              onClick={() => setActiveTab("events")}
+            >
+              Evento
+            </button>
           </div>
         </header>
 
-        <section className="carnet-card carnet-form-card" aria-label="Alta de jugador">
-          <div className="carnet-card__header">
-            <div>
-              <p className="carnet-card__eyebrow">Nuevo jugador</p>
-              <h2>Ingresar datos</h2>
-            </div>
-          </div>
+        {activeTab === "players" ? (
+          <>
+            <section className="carnet-card carnet-form-card" aria-label="Alta de jugador">
+              <div className="carnet-card__header">
+                <div>
+                  <p className="carnet-card__eyebrow">Nuevo jugador</p>
+                  <h2>Ingresar datos</h2>
+                </div>
+              </div>
 
-          <form className="carnet-form" onSubmit={handleSubmit}>
-            <label className="carnet-field">
-              <span>Nombre</span>
-              <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Ej: Martin Rodriguez"
-              />
-            </label>
+              <form className="carnet-form" onSubmit={handleSubmit}>
+                <label className="carnet-field">
+                  <span>Nombre</span>
+                  <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej: Martin Rodriguez" />
+                </label>
 
-            <label className="carnet-field">
-              <span>Vencimiento</span>
-              <input type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} />
-            </label>
+                <label className="carnet-field">
+                  <span>Vencimiento</span>
+                  <input type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} />
+                </label>
 
-            <button type="submit" className="carnet-submit">
-              Agregar jugador
-            </button>
-          </form>
+                <button type="submit" className="carnet-submit">
+                  Agregar jugador
+                </button>
+              </form>
 
-          {formError ? <p className="carnet-form-error">{formError}</p> : null}
-          {listError ? <p className="carnet-form-error">{listError}</p> : null}
-        </section>
+              {formError ? <p className="carnet-form-error">{formError}</p> : null}
+              {listError ? <p className="carnet-form-error">{listError}</p> : null}
+            </section>
 
-        <section className="carnet-grid" aria-label="Lista de jugadores">
-          {hasPlayers ? (
-            players.map((player) => {
-              const daysLeft = getDaysUntil(player.expiryDate);
-              const alertState = getAlertState(daysLeft);
+            <section className="carnet-grid" aria-label="Lista de jugadores">
+              {hasPlayers ? (
+                players.map((player) => {
+                  const daysLeft = getDaysUntil(player.expiryDate);
+                  const alertState = getAlertState(daysLeft);
 
-              return (
-                <article
-                  key={player.id}
-                  className={`carnet-player-card is-${alertState}`}
-                  onDoubleClick={() => openEditModal(player)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      openEditModal(player);
-                    }
-                  }}
-                >
-                  <div className="carnet-player-card__top">
-                    <div>
-                      <p className="carnet-player-card__name">{player.name}</p>
-                      <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
-                    </div>
-                    <span className={`carnet-badge is-${alertState}`}>
-                      {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
-                    </span>
-                  </div>
+                  return (
+                    <article
+                      key={player.id}
+                      className={`carnet-player-card is-${alertState}`}
+                      onDoubleClick={() => openEditModal(player)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          openEditModal(player);
+                        }
+                      }}
+                    >
+                      <div className="carnet-player-card__top">
+                        <div>
+                          <p className="carnet-player-card__name">{player.name}</p>
+                          <p className="carnet-player-card__date">Vence {formatDate(player.expiryDate)}</p>
+                        </div>
+                        <span className={`carnet-badge is-${alertState}`}>
+                          {alertState === "normal" ? "OK" : alertState === "warning" ? "Alerta" : "Crítico"}
+                        </span>
+                      </div>
 
-                  <div className="carnet-player-card__footer">
-                    <strong>
-                      {daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}
-                    </strong>
-                    <small>
-                      {alertState === "normal"
-                        ? "En estado normal."
-                        : alertState === "warning"
-                          ? "Queda cerca del vencimiento."
-                          : "Revisar de inmediato."}
-                    </small>
-                  </div>
+                      <div className="carnet-player-card__footer">
+                        <strong>{daysLeft > 0 ? `Faltan ${daysLeft} dias` : daysLeft === 0 ? "Vence hoy" : "Vencido"}</strong>
+                        <small>
+                          {alertState === "normal"
+                            ? "En estado normal."
+                            : alertState === "warning"
+                              ? "Queda cerca del vencimiento."
+                              : "Revisar de inmediato."}
+                        </small>
+                      </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <article className="carnet-empty-state">
+                  <h2>No hay jugadores cargados</h2>
+                  <p>Usa el formulario de arriba para crear el primer registro y guardarlo en la base de datos.</p>
                 </article>
-              );
-            })
-          ) : (
-            <article className="carnet-empty-state">
-              <h2>No hay jugadores cargados</h2>
-              <p>Usa el formulario de arriba para crear el primer registro y guardarlo en la base de datos.</p>
-            </article>
-          )}
-        </section>
+              )}
+            </section>
+          </>
+        ) : (
+          <CarnetEventTab
+            players={players}
+            events={events}
+            activeEventId={activeEventId}
+            activeEventDetail={activeEventDetail}
+            loadingEvent={loadingEvent}
+            eventError={eventError}
+            onCreateEvent={handleCreateEvent}
+            onSelectEvent={setActiveEventId}
+            onCreatePlayer={createCarnetPlayer}
+            onAttachPlayer={handleAttachEventPlayer}
+            onUpdatePlayerSales={handleUpdateEventPlayerSales}
+          />
+        )}
       </section>
 
       {editingPlayer ? (
@@ -359,9 +590,7 @@ export function App() {
                 type="date"
                 value={editingPlayer.expiryDate}
                 onChange={(event) =>
-                  setEditingPlayer((current) =>
-                    current ? { ...current, expiryDate: event.target.value } : current
-                  )
+                  setEditingPlayer((current) => (current ? { ...current, expiryDate: event.target.value } : current))
                 }
               />
             </label>
