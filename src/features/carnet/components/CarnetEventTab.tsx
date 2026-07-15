@@ -28,9 +28,7 @@ function formatNumber(value: number) {
 }
 
 function getDaysUntil(dateString: string | null) {
-  if (!dateString) {
-    return null;
-  }
+  if (!dateString) return null;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -38,18 +36,9 @@ function getDaysUntil(dateString: string | null) {
   const target = new Date(`${dateString}T00:00:00`);
   target.setHours(0, 0, 0, 0);
 
-  if (Number.isNaN(target.getTime())) {
-    return null;
-  }
+  if (Number.isNaN(target.getTime())) return null;
 
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function getMedal(position: number) {
-  if (position === 1) return "Oro";
-  if (position === 2) return "Plata";
-  if (position === 3) return "Bronce";
-  return "";
 }
 
 function RankingCard({
@@ -65,13 +54,6 @@ function RankingCard({
     <article className={`carnet-ranking-card ${entry.position === 1 ? "is-leader" : ""}`} onDoubleClick={onEdit}>
       <div className="carnet-ranking-card__main">
         <div>
-          <div className="carnet-ranking-card__position">
-            <strong>#{entry.position}</strong>
-            {entry.position === 1 ? <span className="carnet-medal">Mejor vendedor</span> : null}
-            {entry.position > 1 && entry.position <= 3 ? (
-              <span className={`carnet-medal is-${entry.position}`}>{getMedal(entry.position)}</span>
-            ) : null}
-          </div>
           <h3>{entry.playerName}</h3>
         </div>
         <button type="button" className="carnet-ranking-card__plus" onClick={onAddSale} aria-label={`Sumar venta a ${entry.playerName}`}>
@@ -81,7 +63,6 @@ function RankingCard({
 
       <div className="carnet-ranking-card__footer">
         <strong>{formatNumber(entry.sales)} ventas</strong>
-        <small>Doble click para editar</small>
       </div>
     </article>
   );
@@ -216,151 +197,103 @@ export function CarnetEventTab({
     }
   }
 
+  const daysLeft = getDaysUntil(event?.endDate ?? null);
+  const totalSales = event?.totalSales ?? 0;
+  const targetSales = 150;
+  const remainingSales = Math.max(targetSales - totalSales, 0);
+
   return (
     <section className="carnet-event">
       <div className="carnet-event__header">
         <div>
           <p className="carnet-kicker">Evento</p>
-          <h2>Ranking de ventas</h2>
+          <div className="carnet-event__title-row">
+            <h2>Evento cazuela</h2>
+            <span className="carnet-event__days-pill">
+              {daysLeft === null ? "Sin fecha" : daysLeft > 0 ? `Quedan ${daysLeft} dias` : daysLeft === 0 ? "Finaliza hoy" : "Finalizado"}
+            </span>
+          </div>
           <p className="carnet-note">Creá un evento, sumá jugadores y ordená la tabla según la cantidad de ventas.</p>
         </div>
-        <div className="carnet-event__summary">
+      </div>
+
+      <section className="carnet-card carnet-event__panel carnet-event__panel--full">
+        <div className="carnet-card__header">
+          <div>
+            <p className="carnet-card__eyebrow">Registro</p>
+            <h3>Sumar jugador al evento</h3>
+          </div>
+        </div>
+
+        <form className="carnet-form carnet-form--event-player" onSubmit={handleAddPlayer}>
+          <label className="carnet-field">
+            <span>Jugador registrado</span>
+            <select value={selectedPlayerId} onChange={(event) => setSelectedPlayerId(event.target.value)}>
+              <option value="">Elegir jugador</option>
+              {playerOptions.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="carnet-field">
+            <span>O registrar nuevo</span>
+            <input value={newPlayerName} onChange={(event) => setNewPlayerName(event.target.value)} placeholder="Juan Perez" />
+          </label>
+
+          <label className="carnet-field">
+            <span>Vencimiento nuevo</span>
+            <input type="date" value={newPlayerExpiry} onChange={(event) => setNewPlayerExpiry(event.target.value)} />
+          </label>
+
+          <label className="carnet-field">
+            <span>Ventas</span>
+            <input type="number" min="0" value={sales} onChange={(event) => setSales(event.target.value)} />
+          </label>
+
+          <button type="submit" className="carnet-submit" disabled={saving || !activeEventId}>
+            {saving ? "Agregando..." : "Agregar al evento"}
+          </button>
+        </form>
+
+        {eventError ? <p className="carnet-form-error">{eventError}</p> : null}
+        {formError ? <p className="carnet-form-error">{formError}</p> : null}
+      </section>
+
+      <section className="carnet-event__overview">
+        <div className="carnet-event__section-head">
+          <p className="carnet-card__eyebrow">Datos del evento</p>
+          <h3>{event?.name ?? "Sin evento"}</h3>
+        </div>
+
+        <div className="carnet-event__event-meta carnet-event__event-meta--compact">
           <article>
-            <span>Evento</span>
-            <strong>{event?.name ?? "Sin evento"}</strong>
-          </article>
-          <article>
-            <span>Finaliza</span>
+            <span>Tiempo</span>
             <strong>
-              {(() => {
-                const daysLeft = getDaysUntil(event?.endDate ?? null);
-                if (daysLeft === null) return "Sin fecha";
-                if (daysLeft > 0) return `Quedan ${daysLeft} dias`;
-                if (daysLeft === 0) return "Finaliza hoy";
-                return `Finalizado`;
-              })()}
+              {daysLeft === null ? "Sin fecha" : daysLeft > 0 ? `Falta ${daysLeft} dias` : daysLeft === 0 ? "Finaliza hoy" : "Finalizado"}
             </strong>
           </article>
           <article>
-            <span>Jugadores</span>
-            <strong>{event?.playersCount ?? 0}</strong>
+            <span>Meta</span>
+            <strong>{formatNumber(targetSales)}</strong>
           </article>
           <article>
-            <span>Ventas</span>
-            <strong>{formatNumber(event?.totalSales ?? 0)}</strong>
+            <span>Vendido</span>
+            <strong>{formatNumber(totalSales)}</strong>
+          </article>
+          <article>
+            <span>Faltan</span>
+            <strong>{formatNumber(remainingSales)}</strong>
           </article>
         </div>
-      </div>
-
-      <div className="carnet-event__grid">
-        <section className="carnet-card carnet-event__panel">
-          <div className="carnet-card__header">
-            <div>
-              <p className="carnet-card__eyebrow">Evento</p>
-              <h3>Crear o cambiar evento</h3>
-            </div>
-          </div>
-
-          <form className="carnet-form carnet-form--event" onSubmit={handleCreateEvent}>
-            <label className="carnet-field">
-              <span>Nombre del evento</span>
-              <input value={eventName} onChange={(current) => setEventName(current.target.value)} placeholder="Ej: Torneo de socios" />
-            </label>
-            <label className="carnet-field">
-              <span>Fecha de finalizacion</span>
-              <input type="date" value={eventEndDate} onChange={(current) => setEventEndDate(current.target.value)} />
-            </label>
-            <button type="submit" className="carnet-submit" disabled={saving}>
-              {saving ? "Guardando..." : "Crear evento"}
-            </button>
-          </form>
-
-          <div className="carnet-event-list">
-            {events.length ? (
-              events.map((currentEvent) => (
-                <button
-                  key={currentEvent.id}
-                  type="button"
-                  className={`carnet-event-chip ${activeEventId === currentEvent.id ? "is-active" : ""}`}
-                  onClick={() => onSelectEvent(currentEvent.id)}
-                >
-                  <strong>{currentEvent.name}</strong>
-                  <span>
-                    {formatNumber(currentEvent.playersCount)} jugadores - {formatNumber(currentEvent.totalSales)} ventas
-                  </span>
-                  <small>
-                    {(() => {
-                      const daysLeft = getDaysUntil(currentEvent.endDate);
-                      if (daysLeft === null) return "Sin fecha de finalizacion";
-                      if (daysLeft > 0) return `Quedan ${daysLeft} dias`;
-                      if (daysLeft === 0) return "Finaliza hoy";
-                      return `Finalizo hace ${Math.abs(daysLeft)} dias`;
-                    })()}
-                  </small>
-                </button>
-              ))
-            ) : (
-              <p className="carnet-empty-inline">Todavia no hay eventos cargados.</p>
-            )}
-          </div>
-        </section>
-
-        <section className="carnet-card carnet-event__panel">
-          <div className="carnet-card__header">
-            <div>
-              <p className="carnet-card__eyebrow">Participantes</p>
-              <h3>Sumar jugador al evento</h3>
-            </div>
-          </div>
-
-          <form className="carnet-form carnet-form--event-player" onSubmit={handleAddPlayer}>
-            <label className="carnet-field">
-              <span>Jugador registrado</span>
-              <select value={selectedPlayerId} onChange={(event) => setSelectedPlayerId(event.target.value)}>
-                <option value="">Elegir jugador</option>
-                {playerOptions.map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {player.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="carnet-field">
-              <span>O registrar nuevo</span>
-              <input
-                value={newPlayerName}
-                onChange={(event) => setNewPlayerName(event.target.value)}
-                placeholder="Juan Perez"
-              />
-            </label>
-
-            <label className="carnet-field">
-              <span>Vencimiento nuevo</span>
-              <input type="date" value={newPlayerExpiry} onChange={(event) => setNewPlayerExpiry(event.target.value)} />
-            </label>
-
-            <label className="carnet-field">
-              <span>Ventas</span>
-              <input type="number" min="0" value={sales} onChange={(event) => setSales(event.target.value)} />
-            </label>
-
-            <button type="submit" className="carnet-submit" disabled={saving || !activeEventId}>
-              {saving ? "Agregando..." : "Agregar al evento"}
-            </button>
-          </form>
-
-          {eventError ? <p className="carnet-form-error">{eventError}</p> : null}
-          {formError ? <p className="carnet-form-error">{formError}</p> : null}
-        </section>
-      </div>
+      </section>
 
       <section className="carnet-event__ranking">
-        <div className="carnet-card__header">
-          <div>
-            <p className="carnet-card__eyebrow">Ranking</p>
-            <h3>Jugadores vendidos</h3>
-          </div>
+        <div className="carnet-event__section-head">
+          <p className="carnet-card__eyebrow">Ranking</p>
+          <h3>Resultados</h3>
         </div>
 
         {loadingEvent ? <p className="carnet-empty-inline">Cargando ranking...</p> : null}
@@ -389,7 +322,13 @@ export function CarnetEventTab({
 
       {editingEntry ? (
         <div className="carnet-modal-backdrop" role="presentation" onClick={() => setEditingEntry(null)}>
-          <section className="carnet-modal" role="dialog" aria-modal="true" aria-label={`Editar ${editingEntry.playerName}`} onClick={(event) => event.stopPropagation()}>
+          <section
+            className="carnet-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Editar ${editingEntry.playerName}`}
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="carnet-modal__header">
               <div>
                 <p className="carnet-card__eyebrow">Editar ventas</p>
