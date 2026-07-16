@@ -1,0 +1,160 @@
+.carnet-shell {
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent 24%),
+  linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.carnet-topbar {
+  width: min(1080px, 100%);
+  margin: 0 auto 14px;
+  padding: 14px 18px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+}
+
+.carnet-layout {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.carnet-hero,
+.carnet-card {
+  width: 100%;
+  padding: 28px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.carnet-hero {
+  display: grid;
+  gap: 18px;
+}
+
+.carnet-hero__meta {
+  display: grid;
+  gap: 12px;
+}
+
+.carnet-kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.carnet-note {
+  margin: 0;
+  max-width: 58ch;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.carnet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.carnet-stat {
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  display: grid;
+  gap: 6px;
+  min-height: 92px;
+}
+
+.carnet-stat span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-stat strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.carnet-source {
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #0f172a;
+  color: #facc15;
+}
+
+.carnet-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.carnet-card__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-card__header h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.carnet-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.carnet-tabs--header {
+  padding-top: 0;
+  justify-content: flex-start;
+}
+
+.carnet-tab {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.carnet-tab.is-active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}

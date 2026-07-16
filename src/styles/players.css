@@ -1,0 +1,103 @@
+.carnet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.carnet-player-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.carnet-player-card.is-warning {
+  border-color: #facc15;
+}
+
+.carnet-player-card.is-critical {
+  border-color: #f87171;
+}
+
+.carnet-player-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carnet-player-card__name {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.carnet-player-card__date {
+  margin: 0;
+  color: #475569;
+}
+
+.carnet-badge {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.carnet-badge.is-warning {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.carnet-badge.is-critical {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.carnet-player-card__footer {
+  display: grid;
+  gap: 6px;
+}
+
+.carnet-player-card__footer strong {
+  font-size: 1.05rem;
+}
+
+.carnet-player-card__footer small {
+  color: #475569;
+  line-height: 1.45;
+}
+
+.carnet-empty-state {
+  grid-column: 1 / -1;
+  padding: 28px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 20px;
+  background: #fff;
+  color: #475569;
+}
+
+.carnet-empty-state h2 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.carnet-empty-state p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.carnet-empty-inline {
+  margin: 0;
+  color: #64748b;
+}

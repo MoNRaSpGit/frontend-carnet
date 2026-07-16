@@ -1,0 +1,134 @@
+@media (max-width: 900px) {
+  .carnet-stats,
+  .carnet-grid,
+  .carnet-ranking-grid,
+  .carnet-event__event-meta,
+  .carnet-event__event-meta--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .carnet-form {
+    grid-template-columns: 1fr;
+  }
+
+  .carnet-form--player {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .carnet-shell {
+    padding: 12px;
+  }
+
+  .carnet-topbar {
+    width: min(1080px, 100%);
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .carnet-hero,
+  .carnet-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .carnet-note {
+    max-width: none;
+  }
+
+  .carnet-stats {
+    gap: 10px;
+  }
+
+  .carnet-stat {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .carnet-form {
+    gap: 10px;
+  }
+
+  .carnet-submit,
+  .carnet-modal__close,
+  .carnet-modal__ghost,
+  .carnet-modal__danger {
+    width: 100%;
+  }
+
+  .carnet-card__header,
+  .carnet-player-card__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .carnet-tabs--header {
+    gap: 8px;
+  }
+
+  .carnet-tabs--header .carnet-tab {
+    flex: 1 1 0;
+    text-align: center;
+  }
+
+  .carnet-player-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .carnet-badge {
+    align-self: flex-start;
+  }
+
+  .carnet-modal-backdrop {
+    padding: 12px;
+    align-items: end;
+  }
+
+  .carnet-modal {
+    width: 100%;
+    padding: 18px;
+    border-radius: 18px 18px 0 0;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+  }
+
+  .carnet-modal__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .carnet-modal__actions {
+    justify-content: stretch;
+  }
+
+  .carnet-modal__actions-right {
+    width: 100%;
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  .carnet-modal__actions-right > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .carnet-hero h1 {
+    font-size: clamp(1.7rem, 9vw, 2.2rem);
+  }
+
+  .carnet-card__header h2 {
+    font-size: clamp(1.3rem, 7vw, 1.7rem);
+  }
+
+  .carnet-player-card__name {
+    font-size: 1rem;
+  }
+
+  .carnet-player-card__footer strong {
+    font-size: 1rem;
+  }
+}
