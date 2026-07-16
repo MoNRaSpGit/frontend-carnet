@@ -14,6 +14,8 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
   const [name, setName] = useState(player.name);
   const [expiryDate, setExpiryDate] = useState(player.expiryDate);
   const [sex, setSex] = useState<CarnetSex>(player.sex);
+  const [cedula, setCedula] = useState(player.cedula ?? "");
+  const [birthDate, setBirthDate] = useState(player.birthDate ?? "");
   const [sales, setSales] = useState(player.sales === null ? "" : String(player.sales));
   const [error, setError] = useState<string | null>(null);
   const [savingAction, setSavingAction] = useState<SavingAction>(null);
@@ -23,10 +25,11 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
 
   async function handleSave() {
     const trimmedName = name.trim();
+    const trimmedCedula = cedula.trim();
     const parsedSales = sales.trim() ? Number.parseInt(sales, 10) : null;
 
-    if (!trimmedName || !expiryDate) {
-      setError("Completa nombre y fecha antes de guardar.");
+    if (!trimmedName || !expiryDate || !trimmedCedula || !birthDate) {
+      setError("Completa nombre, fecha de vencimiento, cedula y fecha de nacimiento antes de guardar.");
       return;
     }
 
@@ -39,7 +42,7 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
     setError(null);
 
     try {
-      await onSave({ name: trimmedName, expiryDate, sex, sales: parsedSales });
+      await onSave({ name: trimmedName, expiryDate, sex, cedula: trimmedCedula, birthDate, sales: parsedSales });
       onClose();
     } catch {
       setError("No se pudo guardar en la base de datos.");
@@ -100,6 +103,16 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
             <option value="masculino">Masculino</option>
             <option value="femenino">Femenino</option>
           </select>
+        </label>
+
+        <label className="carnet-field">
+          <span>Cedula</span>
+          <input value={cedula} onChange={(event) => setCedula(event.target.value)} placeholder="Ej: 1234567-8" />
+        </label>
+
+        <label className="carnet-field">
+          <span>Fecha de nacimiento</span>
+          <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} />
         </label>
 
         <label className="carnet-field">

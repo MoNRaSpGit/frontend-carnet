@@ -10,10 +10,11 @@ type PlayerFormState = {
   name: string;
   expiryDate: string;
   sex: CarnetSex;
-  sales: string;
+  cedula: string;
+  birthDate: string;
 };
 
-const EMPTY_FORM: PlayerFormState = { name: "", expiryDate: "", sex: "masculino", sales: "" };
+const EMPTY_FORM: PlayerFormState = { name: "", expiryDate: "", sex: "masculino", cedula: "", birthDate: "" };
 
 export function PlayerFormCard({ onCreate, listError }: PlayerFormCardProps) {
   const [form, setForm] = useState<PlayerFormState>(EMPTY_FORM);
@@ -22,22 +23,23 @@ export function PlayerFormCard({ onCreate, listError }: PlayerFormCardProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedName = form.name.trim();
-    const parsedSales = form.sales.trim() ? Number.parseInt(form.sales, 10) : null;
+    const trimmedCedula = form.cedula.trim();
 
-    if (!trimmedName || !form.expiryDate || !form.sex) {
-      setFormError("Completa nombre, vencimiento y sexo antes de guardar.");
-      return;
-    }
-
-    if (form.sales.trim() && (Number.isNaN(parsedSales) || (parsedSales ?? 0) < 0)) {
-      setFormError("Ventas debe ser 0 o más.");
+    if (!trimmedName || !form.expiryDate || !form.sex || !trimmedCedula || !form.birthDate) {
+      setFormError("Completa nombre, vencimiento, sexo, cedula y fecha de nacimiento antes de guardar.");
       return;
     }
 
     setFormError(null);
 
     try {
-      await onCreate({ name: trimmedName, expiryDate: form.expiryDate, sex: form.sex, sales: parsedSales });
+      await onCreate({
+        name: trimmedName,
+        expiryDate: form.expiryDate,
+        sex: form.sex,
+        cedula: trimmedCedula,
+        birthDate: form.birthDate
+      });
       setForm(EMPTY_FORM);
     } catch {
       setFormError("No se pudo guardar en la base de datos.");
@@ -81,13 +83,20 @@ export function PlayerFormCard({ onCreate, listError }: PlayerFormCardProps) {
         </label>
 
         <label className="carnet-field">
-          <span>Ventas opcional</span>
+          <span>Cedula</span>
           <input
-            type="number"
-            min="0"
-            value={form.sales}
-            onChange={(event) => setForm((current) => ({ ...current, sales: event.target.value }))}
-            placeholder="0"
+            value={form.cedula}
+            onChange={(event) => setForm((current) => ({ ...current, cedula: event.target.value }))}
+            placeholder="Ej: 1234567-8"
+          />
+        </label>
+
+        <label className="carnet-field">
+          <span>Fecha de nacimiento</span>
+          <input
+            type="date"
+            value={form.birthDate}
+            onChange={(event) => setForm((current) => ({ ...current, birthDate: event.target.value }))}
           />
         </label>
 
