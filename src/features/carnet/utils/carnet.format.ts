@@ -36,3 +36,17 @@ export function getAlertState(daysLeft: number): AlertState {
 export function sexLabel(sex: "masculino" | "femenino") {
   return sex === "femenino" ? "Femenino" : "Masculino";
 }
+
+export function getNextExpiringDays(
+  players: Array<{ sex: "masculino" | "femenino"; expiryDate: string }>,
+  sex: "masculino" | "femenino"
+) {
+  const upcomingDays = players
+    .filter((player) => player.sex === sex)
+    .map((player) => getDaysUntil(player.expiryDate) ?? -1)
+    .filter((days) => days >= 0);
+
+  if (!upcomingDays.length) return null;
+
+  return Math.min(...upcomingDays);
+}

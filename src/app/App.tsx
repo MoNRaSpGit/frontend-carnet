@@ -7,7 +7,7 @@ import { PlayerGrid } from "../features/carnet/components/PlayerGrid";
 import { TopTabs } from "../features/carnet/components/TopTabs";
 import { useCarnetEvents } from "../features/carnet/hooks/useCarnetEvents";
 import { usePlayers } from "../features/carnet/hooks/usePlayers";
-import { getAlertState, getDaysUntil } from "../features/carnet/utils/carnet.format";
+import { getAlertState, getDaysUntil, getNextExpiringDays } from "../features/carnet/utils/carnet.format";
 import type { TabMode } from "../features/carnet/carnet.ui.types";
 import type { CarnetPlayer } from "../features/carnet/carnet.types";
 
@@ -22,10 +22,10 @@ export function App() {
     const critical = carnetPlayers.players.filter(
       (player) => getAlertState(getDaysUntil(player.expiryDate) ?? 0) === "critical"
     ).length;
-    const female = carnetPlayers.players.filter((player) => player.sex === "femenino").length;
-    const male = carnetPlayers.players.filter((player) => player.sex === "masculino").length;
+    const maleNextDays = getNextExpiringDays(carnetPlayers.players, "masculino");
+    const femaleNextDays = getNextExpiringDays(carnetPlayers.players, "femenino");
 
-    return { total: carnetPlayers.players.length, female, male, critical };
+    return { total: carnetPlayers.players.length, maleNextDays, femaleNextDays, critical };
   }, [carnetPlayers.players]);
 
   const malePlayers = carnetPlayers.players.filter((player) => player.sex === "masculino");

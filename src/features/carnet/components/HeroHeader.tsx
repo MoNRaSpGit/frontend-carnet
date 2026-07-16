@@ -2,10 +2,16 @@ import type { SourceState } from "../hooks/usePlayers";
 
 type PlayerStats = {
   total: number;
-  male: number;
-  female: number;
+  maleNextDays: number | null;
+  femaleNextDays: number | null;
   critical: number;
 };
+
+function formatNextDays(days: number | null) {
+  if (days === null) return "—";
+  if (days === 0) return "Vence hoy";
+  return `${days} dias`;
+}
 
 type HeroHeaderProps = {
   showStats: boolean;
@@ -33,13 +39,13 @@ export function HeroHeader({ showStats, sourceState, stats }: HeroHeaderProps) {
                 <span>Jugadores</span>
                 <strong>{stats.total}</strong>
               </article>
-              <article className="carnet-stat" aria-label={`Masculino: ${stats.male}`}>
+              <article className="carnet-stat" aria-label={`Masculino, proximo vencimiento: ${formatNextDays(stats.maleNextDays)}`}>
                 <span>Masculino</span>
-                <strong>{stats.male}</strong>
+                <strong>{formatNextDays(stats.maleNextDays)}</strong>
               </article>
-              <article className="carnet-stat" aria-label={`Femenino: ${stats.female}`}>
+              <article className="carnet-stat" aria-label={`Femenino, proximo vencimiento: ${formatNextDays(stats.femaleNextDays)}`}>
                 <span>Femenino</span>
-                <strong>{stats.female}</strong>
+                <strong>{formatNextDays(stats.femaleNextDays)}</strong>
               </article>
               <article className="carnet-stat" aria-label={`Crítico: ${stats.critical}`}>
                 <span>Crítico</span>
