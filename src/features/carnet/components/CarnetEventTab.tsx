@@ -42,11 +42,13 @@ function getDaysUntil(dateString: string | null) {
 function RankingCard({
   entry,
   onEdit,
-  onAddSale
+  onAddSale,
+  onSubtractSale
 }: {
   entry: CarnetEventRankingItem;
   onEdit: () => void;
   onAddSale: () => void;
+  onSubtractSale: () => void;
 }) {
   return (
     <article className={`carnet-ranking-card ${entry.position === 1 ? "is-leader" : ""}`} onDoubleClick={onEdit}>
@@ -54,9 +56,20 @@ function RankingCard({
         <div>
           <h3>{entry.playerName}</h3>
         </div>
-        <button type="button" className="carnet-ranking-card__plus" onClick={onAddSale} aria-label={`Sumar venta a ${entry.playerName}`}>
-          +
-        </button>
+        <div className="carnet-ranking-card__actions">
+          <button
+            type="button"
+            className="carnet-ranking-card__minus"
+            onClick={onSubtractSale}
+            disabled={entry.sales <= 0}
+            aria-label={`Restar venta a ${entry.playerName}`}
+          >
+            -
+          </button>
+          <button type="button" className="carnet-ranking-card__plus" onClick={onAddSale} aria-label={`Sumar venta a ${entry.playerName}`}>
+            +
+          </button>
+        </div>
       </div>
 
       <div className="carnet-ranking-card__footer">
@@ -305,6 +318,10 @@ export function CarnetEventTab({
               onAddSale={() => {
                 if (!activeEventId) return;
                 void onUpdatePlayerSales(activeEventId, entry.playerId, entry.sales + 1);
+              }}
+              onSubtractSale={() => {
+                if (!activeEventId || entry.sales <= 0) return;
+                void onUpdatePlayerSales(activeEventId, entry.playerId, entry.sales - 1);
               }}
             />
           ))}

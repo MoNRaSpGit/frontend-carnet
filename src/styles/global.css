@@ -622,16 +622,35 @@ select {
   font-size: 1rem;
 }
 
-.carnet-ranking-card__plus {
+.carnet-ranking-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.carnet-ranking-card__plus,
+.carnet-ranking-card__minus {
   width: 42px;
   height: 42px;
   border: 0;
   border-radius: 14px;
-  background: #0f172a;
   color: #fff;
   font-size: 1.2rem;
   font-weight: 800;
   cursor: pointer;
+}
+
+.carnet-ranking-card__plus {
+  background: #0f172a;
+}
+
+.carnet-ranking-card__minus {
+  background: #94a3b8;
+}
+
+.carnet-ranking-card__minus:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
 }
 
 .carnet-ranking-card__footer {
