@@ -1,6 +1,7 @@
 import { EventPicker } from "../features/carnet/components/events/EventPicker";
 import { UsuarioSaleCard } from "../features/carnet/components/usuario/UsuarioSaleCard";
 import { useCarnetEvents } from "../features/carnet/hooks/useCarnetEvents";
+import { formatNumber } from "../features/carnet/utils/carnet.format";
 
 type UsuarioAppProps = {
   onLogout: () => void;
@@ -9,6 +10,12 @@ type UsuarioAppProps = {
 export function UsuarioApp({ onLogout }: UsuarioAppProps) {
   const carnetEvents = useCarnetEvents();
   const ranking = (carnetEvents.activeEventDetail?.ranking ?? []).filter((entry) => entry.sales > 0);
+
+  const totalPortions = ranking.reduce((sum, entry) => sum + entry.sales, 0);
+  const totalDelivered = ranking.reduce(
+    (sum, entry) => sum + entry.buyers.reduce((buyerSum, buyer) => buyerSum + (buyer.delivered ? buyer.quantity : 0), 0),
+    0
+  );
 
   return (
     <main className="carnet-shell">
@@ -24,6 +31,21 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
           <h2>Entrega de porciones</h2>
           <p className="carnet-note">Marca la casilla apenas entregues las porciones a cada persona.</p>
         </header>
+
+        {ranking.length ? (
+          <div className="carnet-usuario-totals">
+            <div>
+              <span>Porciones totales</span>
+              <strong>{formatNumber(totalPortions)}</strong>
+            </div>
+            <div>
+              <span>Entregadas</span>
+              <strong>
+                {formatNumber(totalDelivered)}/{formatNumber(totalPortions)}
+              </strong>
+            </div>
+          </div>
+        ) : null}
 
         <EventPicker events={carnetEvents.events} activeEventId={carnetEvents.activeEventId} onSelectEvent={carnetEvents.setActiveEventId} />
 

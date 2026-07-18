@@ -71,6 +71,37 @@
   gap: 4px;
 }
 
+.carnet-usuario-totals {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.carnet-usuario-totals > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.carnet-usuario-totals span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.carnet-usuario-totals strong {
+  font-size: 1.3rem;
+  color: #0f172a;
+}
+
 .carnet-usuario-grid {
   display: grid;
   gap: 14px;
@@ -91,6 +122,31 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.carnet-usuario-card__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.carnet-usuario-card__summary span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #44526b;
+  white-space: nowrap;
+}
+
+.carnet-usuario-card__details-toggle {
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
 }
 
 .carnet-usuario-card__buyer-list {
