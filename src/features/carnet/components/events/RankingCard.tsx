@@ -93,7 +93,7 @@ export function RankingCard({ entry, onEdit, onAddSale, onSubtractSale, onAddBuy
                 {entry.buyers.map((buyer) => (
                   <li key={buyer.id}>
                     <span>
-                      {buyer.quantity} para {buyer.buyerName}
+                      {buyer.quantity} {buyer.buyerName}
                     </span>
                     <button
                       type="button"

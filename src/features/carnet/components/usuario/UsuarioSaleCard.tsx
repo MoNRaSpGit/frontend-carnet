@@ -37,7 +37,7 @@ export function UsuarioSaleCard({ entry, onToggleDelivered }: UsuarioSaleCardPro
                     onChange={(event) => onToggleDelivered(buyer.id, event.target.checked)}
                   />
                   <span>
-                    {buyer.quantity} para {buyer.buyerName}
+                    {buyer.quantity} {buyer.buyerName}
                   </span>
                 </label>
               </li>

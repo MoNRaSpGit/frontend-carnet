@@ -45,6 +45,10 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
                 {formatNumber(totalDelivered)}/{formatNumber(totalPortions)}
               </strong>
             </div>
+            <div>
+              <span>Quedan</span>
+              <strong>{formatNumber(totalPortions - totalDelivered)}</strong>
+            </div>
           </div>
         ) : null}
 
