@@ -45,11 +45,22 @@ export function RankingCard({ entry, onEdit, onAddSale, onSubtractSale, onAddBuy
     }
   }
 
+  const isFullyDetailed = entry.sales > 0 && entry.unassignedSales <= 0;
+
   return (
     <article className={`carnet-ranking-card ${entry.position === 1 ? "is-leader" : ""}`}>
       <div className="carnet-ranking-card__main" onDoubleClick={onEdit}>
-        <div>
+        <div className="carnet-ranking-card__title">
           <h3>{entry.playerName}</h3>
+          {entry.sales > 0 ? (
+            <span
+              className={`carnet-ranking-card__status ${isFullyDetailed ? "is-complete" : "is-incomplete"}`}
+              title={isFullyDetailed ? "Detalle completo" : "Falta detallar ventas"}
+              aria-label={isFullyDetailed ? "Detalle completo" : "Falta detallar ventas"}
+            >
+              {isFullyDetailed ? "✓" : "✕"}
+            </span>
+          ) : null}
         </div>
         <div className="carnet-ranking-card__actions">
           <button

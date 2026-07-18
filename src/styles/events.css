@@ -160,6 +160,33 @@
   gap: 12px;
 }
 
+.carnet-ranking-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carnet-ranking-card__status {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.carnet-ranking-card__status.is-complete {
+  background: #16a34a;
+}
+
+.carnet-ranking-card__status.is-incomplete {
+  background: #dc2626;
+}
+
 .carnet-ranking-card__actions {
   display: flex;
   gap: 8px;
