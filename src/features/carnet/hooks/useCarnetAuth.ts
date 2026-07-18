@@ -1,27 +1,18 @@
 import { useState } from "react";
 import type { CarnetRole } from "../carnet.auth.types";
 
-const STORAGE_KEY = "carnet.role";
-
-function readStoredRole(): CarnetRole | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "admin" || stored === "usuario" ? stored : null;
-}
-
+// El rol vive solo en memoria (nunca en localStorage/sessionStorage/URL):
+// cada vez que se abre o recarga la app, sin importar el link, arranca
+// siempre en el login. Nadie puede saltearlo con un link ni con una
+// sesion vieja guardada en el dispositivo.
 export function useCarnetAuth() {
-  const [role, setRole] = useState<CarnetRole | null>(() => readStoredRole());
+  const [role, setRole] = useState<CarnetRole | null>(null);
 
   function login(nextRole: CarnetRole) {
-    window.localStorage.setItem(STORAGE_KEY, nextRole);
     setRole(nextRole);
   }
 
   function logout() {
-    window.localStorage.removeItem(STORAGE_KEY);
     setRole(null);
   }
 
