@@ -131,4 +131,33 @@
   .carnet-player-card__footer strong {
     font-size: 1rem;
   }
+
+  .carnet-ranking-card__buyer-form {
+    grid-template-columns: 1fr;
+  }
+
+  .carnet-ranking-card__buyer-form button {
+    width: 100%;
+  }
+
+  .carnet-usuario-totals {
+    gap: 8px;
+  }
+
+  .carnet-usuario-totals > div {
+    padding: 10px 12px;
+  }
+
+  .carnet-usuario-totals strong {
+    font-size: 1.1rem;
+  }
+
+  .carnet-usuario-card__header {
+    flex-wrap: wrap;
+  }
+
+  .carnet-usuario-card__summary {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

@@ -55,7 +55,7 @@
 }
 
 .carnet-session-bar__logout {
-  min-height: 36px;
+  min-height: 40px;
   padding: 0 14px;
   border: 1px solid #dbe4ee;
   border-radius: 999px;
@@ -139,13 +139,14 @@
 }
 
 .carnet-usuario-card__details-toggle {
+  min-height: 40px;
   border: 1px solid #dbe4ee;
   border-radius: 999px;
   background: #fff;
   color: #334155;
   font-size: 0.82rem;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 6px 14px;
   cursor: pointer;
 }
 
@@ -159,7 +160,7 @@
 
 .carnet-usuario-card__buyer-list li {
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 0;
   background: #f8fafc;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -167,6 +168,9 @@
 .carnet-usuario-card__buyer-list li label {
   display: flex;
   align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
   gap: 10px;
   font-size: 0.95rem;
   color: #0f172a;
@@ -174,8 +178,8 @@
 }
 
 .carnet-usuario-card__buyer-list li input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   cursor: pointer;
 }

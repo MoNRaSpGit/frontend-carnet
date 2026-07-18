@@ -1,5 +1,4 @@
 import { toast } from "react-toastify";
-import { EventPicker } from "../features/carnet/components/events/EventPicker";
 import { UsuarioSaleCard } from "../features/carnet/components/usuario/UsuarioSaleCard";
 import { useCarnetEvents } from "../features/carnet/hooks/useCarnetEvents";
 import { formatNumber } from "../features/carnet/utils/carnet.format";
@@ -30,7 +29,6 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
         <header className="carnet-usuario-header">
           <p className="carnet-kicker">Ventas</p>
           <h2>Entrega de porciones</h2>
-          <p className="carnet-note">Marca la casilla apenas entregues las porciones a cada persona.</p>
         </header>
 
         {ranking.length ? (
@@ -51,8 +49,6 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
             </div>
           </div>
         ) : null}
-
-        <EventPicker events={carnetEvents.events} activeEventId={carnetEvents.activeEventId} onSelectEvent={carnetEvents.setActiveEventId} />
 
         {carnetEvents.loadingEvent ? <p className="carnet-empty-inline">Cargando ventas...</p> : null}
 
