@@ -203,3 +203,108 @@
 .carnet-ranking-card__footer small {
   color: #64748b;
 }
+
+.carnet-ranking-card__footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carnet-ranking-card__details-toggle {
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.carnet-ranking-card__buyers {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid #edf1f7;
+  padding-top: 12px;
+}
+
+.carnet-ranking-card__buyer-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carnet-ranking-card__buyer-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.carnet-ranking-card__buyer-remove {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #dbe4ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.carnet-ranking-card__buyer-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.carnet-ranking-card__buyer-remaining {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.carnet-ranking-card__buyer-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px auto;
+  gap: 8px;
+}
+
+.carnet-ranking-card__buyer-form input {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #dbe4ee;
+  font-size: 0.9rem;
+}
+
+.carnet-ranking-card__buyer-form button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.carnet-ranking-card__buyer-form button:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.carnet-ranking-card__buyer-error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b91c1c;
+  font-weight: 700;
+}

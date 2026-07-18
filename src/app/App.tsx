@@ -65,6 +65,8 @@ export function App() {
         onSelectEvent={carnetEvents.setActiveEventId}
         onAttachPlayer={carnetEvents.attachPlayer}
         onUpdatePlayerSales={carnetEvents.updatePlayerSales}
+        onAddPlayerBuyer={carnetEvents.addPlayerBuyer}
+        onRemovePlayerBuyer={carnetEvents.removePlayerBuyer}
       />
     );
 

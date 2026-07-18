@@ -18,6 +18,8 @@ type CarnetEventTabProps = {
   onSelectEvent: (eventId: number) => void;
   onAttachPlayer: (eventId: number, playerId: number, sales: number) => Promise<unknown>;
   onUpdatePlayerSales: (eventId: number, playerId: number, sales: number) => Promise<unknown>;
+  onAddPlayerBuyer: (eventId: number, playerId: number, buyerName: string, quantity: number) => Promise<unknown>;
+  onRemovePlayerBuyer: (eventId: number, playerId: number, buyerId: number) => Promise<unknown>;
 };
 
 export function CarnetEventTab({
@@ -29,7 +31,9 @@ export function CarnetEventTab({
   eventError,
   onSelectEvent,
   onAttachPlayer,
-  onUpdatePlayerSales
+  onUpdatePlayerSales,
+  onAddPlayerBuyer,
+  onRemovePlayerBuyer
 }: CarnetEventTabProps) {
   const [editingEntry, setEditingEntry] = useState<CarnetEventRankingItem | null>(null);
 
@@ -86,6 +90,14 @@ export function CarnetEventTab({
               onSubtractSale={() => {
                 if (!activeEventId || entry.sales <= 0) return;
                 void onUpdatePlayerSales(activeEventId, entry.playerId, entry.sales - 1);
+              }}
+              onAddBuyer={(buyerName, quantity) => {
+                if (!activeEventId) return Promise.resolve();
+                return onAddPlayerBuyer(activeEventId, entry.playerId, buyerName, quantity);
+              }}
+              onRemoveBuyer={(buyerId) => {
+                if (!activeEventId) return Promise.resolve();
+                return onRemovePlayerBuyer(activeEventId, entry.playerId, buyerId);
               }}
             />
           ))}

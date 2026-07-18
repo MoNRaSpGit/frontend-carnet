@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import {
+  addCarnetEventPlayerBuyer,
   createCarnetEvent,
   getCarnetEvent,
   listCarnetEvents,
+  removeCarnetEventPlayerBuyer,
   updateCarnetEventPlayer,
   upsertCarnetEventPlayer
 } from "../carnet.event.api";
@@ -116,6 +118,20 @@ export function useCarnetEvents() {
     return response.item;
   }
 
+  async function addPlayerBuyer(eventId: number, playerId: number, buyerName: string, quantity: number) {
+    const response = await addCarnetEventPlayerBuyer(eventId, playerId, buyerName, quantity);
+    setActiveEventDetail(response.item);
+    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
+    return response.item;
+  }
+
+  async function removePlayerBuyer(eventId: number, playerId: number, buyerId: number) {
+    const response = await removeCarnetEventPlayerBuyer(eventId, playerId, buyerId);
+    setActiveEventDetail(response.item);
+    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
+    return response.item;
+  }
+
   function syncPlayer(nextPlayer: CarnetPlayer, mode: "upsert" | "delete") {
     setActiveEventDetail((current) => {
       if (!current) {
@@ -148,6 +164,8 @@ export function useCarnetEvents() {
     createEvent,
     attachPlayer,
     updatePlayerSales,
+    addPlayerBuyer,
+    removePlayerBuyer,
     syncPlayer
   };
 }
