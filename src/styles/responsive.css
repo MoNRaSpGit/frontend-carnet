@@ -148,10 +148,6 @@
     padding: 10px 12px;
   }
 
-  .carnet-usuario-totals strong {
-    font-size: 1.1rem;
-  }
-
   .carnet-usuario-card__header {
     flex-wrap: wrap;
   }

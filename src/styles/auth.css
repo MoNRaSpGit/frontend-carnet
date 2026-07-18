@@ -82,7 +82,8 @@
 .carnet-usuario-totals > div {
   display: grid;
   gap: 4px;
-  padding: 14px 16px;
+  min-width: 0;
+  padding: 14px 12px;
   border: 1px solid #dbe4ee;
   border-radius: 14px;
   background: #fff;
@@ -90,16 +91,19 @@
 }
 
 .carnet-usuario-totals span {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #64748b;
+  overflow-wrap: break-word;
 }
 
 .carnet-usuario-totals strong {
-  font-size: 1.3rem;
+  font-size: clamp(0.95rem, 5.5vw, 1.3rem);
   color: #0f172a;
+  overflow-wrap: break-word;
+  line-height: 1.2;
 }
 
 .carnet-usuario-grid {
