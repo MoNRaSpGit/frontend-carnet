@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import { EventPicker } from "../features/carnet/components/events/EventPicker";
 import { UsuarioSaleCard } from "../features/carnet/components/usuario/UsuarioSaleCard";
 import { useCarnetEvents } from "../features/carnet/hooks/useCarnetEvents";
@@ -65,7 +66,9 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
               entry={entry}
               onToggleDelivered={(buyerId, delivered) => {
                 if (!carnetEvents.activeEventId) return;
-                void carnetEvents.setBuyerDelivered(carnetEvents.activeEventId, entry.playerId, buyerId, delivered);
+                carnetEvents.setBuyerDelivered(carnetEvents.activeEventId, entry.playerId, buyerId, delivered).catch(() => {
+                  toast.error("No se pudo guardar la entrega, se deshizo el cambio.");
+                });
               }}
             />
           ))}

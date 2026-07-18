@@ -134,10 +134,32 @@ export function useCarnetEvents() {
   }
 
   async function setBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
-    const response = await setCarnetEventPlayerBuyerDelivered(eventId, playerId, buyerId, delivered);
-    setActiveEventDetail(response.item);
-    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
-    return response.item;
+    const previousDetail = activeEventDetail;
+
+    // Optimista: se tilda/destilda al toque en pantalla, el guardado real
+    // pasa atras. Si falla, se vuelve al estado anterior (se destilda solo).
+    setActiveEventDetail((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        ranking: current.ranking.map((entry) =>
+          entry.playerId === playerId
+            ? { ...entry, buyers: entry.buyers.map((buyer) => (buyer.id === buyerId ? { ...buyer, delivered } : buyer)) }
+            : entry
+        )
+      };
+    });
+
+    try {
+      const response = await setCarnetEventPlayerBuyerDelivered(eventId, playerId, buyerId, delivered);
+      setActiveEventDetail(response.item);
+      setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
+      return response.item;
+    } catch (error) {
+      setActiveEventDetail(previousDetail);
+      throw error;
+    }
   }
 
   function syncPlayer(nextPlayer: CarnetPlayer, mode: "upsert" | "delete") {

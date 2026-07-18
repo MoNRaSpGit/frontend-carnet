@@ -15,7 +15,7 @@ export function LoginScreen({ onLoginUsuario, onLoginAdmin }: LoginScreenProps) 
     <main className="carnet-login-shell">
       <section className="carnet-login-card">
         <h1 className="carnet-login-title" onClick={() => setTitleClicks((current) => current + 1)}>
-          Carnet
+          Peñarol
         </h1>
 
         <button type="button" className="carnet-login-button" onClick={onLoginUsuario}>
