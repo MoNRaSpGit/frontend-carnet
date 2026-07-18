@@ -1,0 +1,140 @@
+.carnet-login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.1), transparent 24%),
+    linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.carnet-login-card {
+  width: min(360px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 36px 28px;
+  border: 1px solid #dbe4ee;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+  text-align: center;
+}
+
+.carnet-login-title {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #0f172a;
+  user-select: none;
+  cursor: default;
+}
+
+.carnet-login-button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+}
+
+.carnet-login-button--admin {
+  background: linear-gradient(135deg, #334155, #64748b);
+  box-shadow: 0 12px 24px rgba(51, 65, 85, 0.2);
+}
+
+.carnet-session-bar {
+  width: min(1080px, 100%);
+  margin: 0 auto 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.carnet-session-bar__logout {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.carnet-usuario-header {
+  display: grid;
+  gap: 4px;
+}
+
+.carnet-usuario-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.carnet-usuario-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.carnet-usuario-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carnet-usuario-card__buyer-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carnet-usuario-card__buyer-list li {
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.carnet-usuario-card__buyer-list li label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.carnet-usuario-card__buyer-list li input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.carnet-usuario-card__buyer-list li.is-delivered {
+  background: #1e293b;
+}
+
+.carnet-usuario-card__buyer-list li.is-delivered label {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.carnet-usuario-card__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}

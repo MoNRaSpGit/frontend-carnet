@@ -5,6 +5,7 @@ import {
   getCarnetEvent,
   listCarnetEvents,
   removeCarnetEventPlayerBuyer,
+  setCarnetEventPlayerBuyerDelivered,
   updateCarnetEventPlayer,
   upsertCarnetEventPlayer
 } from "../carnet.event.api";
@@ -132,6 +133,13 @@ export function useCarnetEvents() {
     return response.item;
   }
 
+  async function setBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
+    const response = await setCarnetEventPlayerBuyerDelivered(eventId, playerId, buyerId, delivered);
+    setActiveEventDetail(response.item);
+    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
+    return response.item;
+  }
+
   function syncPlayer(nextPlayer: CarnetPlayer, mode: "upsert" | "delete") {
     setActiveEventDetail((current) => {
       if (!current) {
@@ -166,6 +174,7 @@ export function useCarnetEvents() {
     updatePlayerSales,
     addPlayerBuyer,
     removePlayerBuyer,
+    setBuyerDelivered,
     syncPlayer
   };
 }

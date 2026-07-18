@@ -89,6 +89,18 @@ export async function addCarnetEventPlayerBuyer(eventId: number, playerId: numbe
   return readJson<UpsertEventPlayerResponse>(response);
 }
 
+export async function setCarnetEventPlayerBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
+  const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/buyers/${buyerId}/delivered`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ delivered })
+  });
+
+  return readJson<UpsertEventPlayerResponse>(response);
+}
+
 export async function removeCarnetEventPlayerBuyer(eventId: number, playerId: number, buyerId: number) {
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/buyers/${buyerId}`, {
     method: "DELETE"
