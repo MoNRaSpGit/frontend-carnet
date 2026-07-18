@@ -133,11 +133,7 @@ export function useCarnetEvents() {
     return response.item;
   }
 
-  async function setBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
-    const previousDetail = activeEventDetail;
-
-    // Optimista: se tilda/destilda al toque en pantalla, el guardado real
-    // pasa atras. Si falla, se vuelve al estado anterior (se destilda solo).
+  function applyBuyerDelivered(playerId: number, buyerId: number, delivered: boolean) {
     setActiveEventDetail((current) => {
       if (!current) return current;
 
@@ -150,14 +146,22 @@ export function useCarnetEvents() {
         )
       };
     });
+  }
+
+  async function setBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
+    const previousDelivered =
+      activeEventDetail?.ranking.find((entry) => entry.playerId === playerId)?.buyers.find((buyer) => buyer.id === buyerId)
+        ?.delivered ?? !delivered;
+
+    // Optimista: se tilda/destilda al toque en pantalla, el guardado real pasa
+    // atras. El cambio es quirurgico (solo ese comprador), asi no pisa otros
+    // toggles que puedan estar en vuelo al mismo tiempo (evita el parpadeo).
+    applyBuyerDelivered(playerId, buyerId, delivered);
 
     try {
-      const response = await setCarnetEventPlayerBuyerDelivered(eventId, playerId, buyerId, delivered);
-      setActiveEventDetail(response.item);
-      setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
-      return response.item;
+      await setCarnetEventPlayerBuyerDelivered(eventId, playerId, buyerId, delivered);
     } catch (error) {
-      setActiveEventDetail(previousDetail);
+      applyBuyerDelivered(playerId, buyerId, previousDelivered);
       throw error;
     }
   }
