@@ -39,6 +39,10 @@ export default defineConfig(({ mode }) => {
       })
     ],
     base: mode === "github-pages" ? "/frontend-carnet/" : "/",
+    server: {
+      port: 5192,
+      strictPort: true
+    },
     test: {
       exclude: ["src/shared/tests/**", "node_modules/**", "dist/**"]
     }

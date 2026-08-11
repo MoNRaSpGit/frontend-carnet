@@ -53,6 +53,18 @@ export async function createCarnetEvent(name: string, endDate: string) {
   return readJson<CreateEventResponse>(response);
 }
 
+export async function setCarnetEventClosed(eventId: number, isClosed: boolean) {
+  const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ isClosed })
+  });
+
+  return readJson<CreateEventResponse>(response);
+}
+
 export async function upsertCarnetEventPlayer(eventId: number, playerId: number, sales: number) {
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players`, {
     method: "POST",

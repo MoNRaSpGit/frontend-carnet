@@ -5,6 +5,7 @@ import {
   getCarnetEvent,
   listCarnetEvents,
   removeCarnetEventPlayerBuyer,
+  setCarnetEventClosed,
   setCarnetEventPlayerBuyerDelivered,
   updateCarnetEventPlayer,
   upsertCarnetEventPlayer
@@ -105,6 +106,13 @@ export function useCarnetEvents() {
     return response.item;
   }
 
+  async function setEventClosed(eventId: number, isClosed: boolean) {
+    const response = await setCarnetEventClosed(eventId, isClosed);
+    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.id ? response.item : event))));
+    setActiveEventDetail((current) => (current && current.event.id === response.item.id ? { ...current, event: response.item } : current));
+    return response.item;
+  }
+
   async function attachPlayer(eventId: number, playerId: number, sales: number) {
     const response = await upsertCarnetEventPlayer(eventId, playerId, sales);
     setActiveEventDetail(response.item);
@@ -196,6 +204,7 @@ export function useCarnetEvents() {
     eventError,
     setActiveEventId,
     createEvent,
+    setEventClosed,
     attachPlayer,
     updatePlayerSales,
     addPlayerBuyer,

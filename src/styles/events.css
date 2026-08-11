@@ -29,6 +29,42 @@
   text-transform: uppercase;
 }
 
+.carnet-event__closed-pill {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.carnet-event__close-toggle {
+  min-height: 32px;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #fff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.carnet-event__close-toggle:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.carnet-note--warning {
+  color: #b45309;
+  font-weight: 700;
+}
+
 .carnet-event__event-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -130,6 +166,25 @@
 .carnet-event-chip.is-active {
   border-color: #2563eb;
   box-shadow: 0 12px 26px rgba(37, 99, 235, 0.12);
+}
+
+.carnet-event-chip.is-closed {
+  opacity: 0.72;
+}
+
+.carnet-event-chip__badge {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .carnet-ranking-grid {

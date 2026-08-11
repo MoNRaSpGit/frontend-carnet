@@ -4,6 +4,7 @@ import type { CarnetEventRankingItem } from "../../carnet.event.types";
 
 type RankingCardProps = {
   entry: CarnetEventRankingItem;
+  readOnly?: boolean;
   onEdit: () => void;
   onAddSale: () => void;
   onSubtractSale: () => void;
@@ -11,7 +12,7 @@ type RankingCardProps = {
   onRemoveBuyer: (buyerId: number) => Promise<unknown>;
 };
 
-export function RankingCard({ entry, onEdit, onAddSale, onSubtractSale, onAddBuyer, onRemoveBuyer }: RankingCardProps) {
+export function RankingCard({ entry, readOnly = false, onEdit, onAddSale, onSubtractSale, onAddBuyer, onRemoveBuyer }: RankingCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [buyerName, setBuyerName] = useState("");
   const [buyerQuantity, setBuyerQuantity] = useState("1");
@@ -67,12 +68,18 @@ export function RankingCard({ entry, onEdit, onAddSale, onSubtractSale, onAddBuy
             type="button"
             className="carnet-ranking-card__minus"
             onClick={onSubtractSale}
-            disabled={entry.sales <= 0}
+            disabled={readOnly || entry.sales <= 0}
             aria-label={`Restar venta a ${entry.playerName}`}
           >
             -
           </button>
-          <button type="button" className="carnet-ranking-card__plus" onClick={onAddSale} aria-label={`Sumar venta a ${entry.playerName}`}>
+          <button
+            type="button"
+            className="carnet-ranking-card__plus"
+            onClick={onAddSale}
+            disabled={readOnly}
+            aria-label={`Sumar venta a ${entry.playerName}`}
+          >
             +
           </button>
         </div>
@@ -114,25 +121,27 @@ export function RankingCard({ entry, onEdit, onAddSale, onSubtractSale, onAddBuy
               <p className="carnet-ranking-card__buyer-remaining">Faltan detallar {formatNumber(entry.unassignedSales)}.</p>
             ) : null}
 
-            <div className="carnet-ranking-card__buyer-form">
-              <input
-                type="text"
-                value={buyerName}
-                onChange={(event) => setBuyerName(event.target.value)}
-                placeholder="Nombre"
-                disabled={saving || entry.unassignedSales <= 0}
-              />
-              <input
-                type="number"
-                min="1"
-                value={buyerQuantity}
-                onChange={(event) => setBuyerQuantity(event.target.value)}
-                disabled={saving || entry.unassignedSales <= 0}
-              />
-              <button type="button" onClick={handleAddBuyer} disabled={saving || entry.unassignedSales <= 0}>
-                Agregar
-              </button>
-            </div>
+            {!readOnly ? (
+              <div className="carnet-ranking-card__buyer-form">
+                <input
+                  type="text"
+                  value={buyerName}
+                  onChange={(event) => setBuyerName(event.target.value)}
+                  placeholder="Nombre"
+                  disabled={saving || entry.unassignedSales <= 0}
+                />
+                <input
+                  type="number"
+                  min="1"
+                  value={buyerQuantity}
+                  onChange={(event) => setBuyerQuantity(event.target.value)}
+                  disabled={saving || entry.unassignedSales <= 0}
+                />
+                <button type="button" onClick={handleAddBuyer} disabled={saving || entry.unassignedSales <= 0}>
+                  Agregar
+                </button>
+              </div>
+            ) : null}
 
             {buyerError ? <p className="carnet-ranking-card__buyer-error">{buyerError}</p> : null}
           </div>

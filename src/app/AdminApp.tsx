@@ -67,6 +67,8 @@ export function AdminApp({ onLogout }: AdminAppProps) {
         loadingEvent={carnetEvents.loadingEvent}
         eventError={carnetEvents.eventError}
         onSelectEvent={carnetEvents.setActiveEventId}
+        onCreateEvent={(name, endDate) => carnetEvents.createEvent(name, endDate, carnetPlayers.players)}
+        onSetEventClosed={carnetEvents.setEventClosed}
         onAttachPlayer={carnetEvents.attachPlayer}
         onUpdatePlayerSales={carnetEvents.updatePlayerSales}
         onAddPlayerBuyer={carnetEvents.addPlayerBuyer}

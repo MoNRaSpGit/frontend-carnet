@@ -20,10 +20,13 @@ export function EventPicker({ events, activeEventId, onSelectEvent }: EventPicke
             <button
               key={item.id}
               type="button"
-              className={`carnet-event-chip ${item.id === activeEventId ? "is-active" : ""}`}
+              className={`carnet-event-chip ${item.id === activeEventId ? "is-active" : ""} ${item.isClosed ? "is-closed" : ""}`}
               onClick={() => onSelectEvent(item.id)}
             >
-              <strong>{item.name}</strong>
+              <strong>
+                {item.name}
+                {item.isClosed ? <span className="carnet-event-chip__badge">Cerrado</span> : null}
+              </strong>
               <span>{item.endDate ? item.endDate : "Sin fecha"}</span>
             </button>
           ))

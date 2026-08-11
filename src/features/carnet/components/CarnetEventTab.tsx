@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getDaysUntil } from "../utils/carnet.format";
 import { AttachPlayerForm } from "./events/AttachPlayerForm";
+import { CreateEventForm } from "./events/CreateEventForm";
 import { EditEventSalesModal } from "./events/EditEventSalesModal";
 import { EventOverviewStats } from "./events/EventOverviewStats";
 import { EventPicker } from "./events/EventPicker";
@@ -16,6 +17,8 @@ type CarnetEventTabProps = {
   loadingEvent: boolean;
   eventError: string | null;
   onSelectEvent: (eventId: number) => void;
+  onCreateEvent: (name: string, endDate: string) => Promise<unknown>;
+  onSetEventClosed: (eventId: number, isClosed: boolean) => Promise<unknown>;
   onAttachPlayer: (eventId: number, playerId: number, sales: number) => Promise<unknown>;
   onUpdatePlayerSales: (eventId: number, playerId: number, sales: number) => Promise<unknown>;
   onAddPlayerBuyer: (eventId: number, playerId: number, buyerName: string, quantity: number) => Promise<unknown>;
@@ -30,16 +33,31 @@ export function CarnetEventTab({
   loadingEvent,
   eventError,
   onSelectEvent,
+  onCreateEvent,
+  onSetEventClosed,
   onAttachPlayer,
   onUpdatePlayerSales,
   onAddPlayerBuyer,
   onRemovePlayerBuyer
 }: CarnetEventTabProps) {
   const [editingEntry, setEditingEntry] = useState<CarnetEventRankingItem | null>(null);
+  const [togglingClosed, setTogglingClosed] = useState(false);
 
   const ranking = activeEventDetail?.ranking ?? [];
   const event = activeEventDetail?.event ?? null;
   const daysLeft = getDaysUntil(event?.endDate ?? null);
+  const isClosed = event?.isClosed ?? false;
+
+  async function handleToggleClosed() {
+    if (!activeEventId || togglingClosed) return;
+
+    setTogglingClosed(true);
+    try {
+      await onSetEventClosed(activeEventId, !isClosed);
+    } finally {
+      setTogglingClosed(false);
+    }
+  }
 
   return (
     <section className="carnet-event">
@@ -51,6 +69,17 @@ export function CarnetEventTab({
             <span className="carnet-event__days-pill">
               {daysLeft === null ? "Sin fecha" : daysLeft > 0 ? `Quedan ${daysLeft} dias` : daysLeft === 0 ? "Finaliza hoy" : "Finalizado"}
             </span>
+            {isClosed ? <span className="carnet-event__closed-pill">Evento cerrado</span> : null}
+            {event ? (
+              <button
+                type="button"
+                className="carnet-event__close-toggle"
+                onClick={handleToggleClosed}
+                disabled={togglingClosed}
+              >
+                {togglingClosed ? "Guardando..." : isClosed ? "Reabrir evento" : "Cerrar evento"}
+              </button>
+            ) : null}
           </div>
           <p className="carnet-note">Creá un evento, sumá jugadores y ordená la tabla según la cantidad de ventas.</p>
         </div>
@@ -58,7 +87,16 @@ export function CarnetEventTab({
 
       <EventPicker events={events} activeEventId={activeEventId} onSelectEvent={onSelectEvent} />
 
-      <AttachPlayerForm players={players} activeEventId={activeEventId} eventError={eventError} onAttachPlayer={onAttachPlayer} />
+      <CreateEventForm onCreateEvent={onCreateEvent} />
+
+      {isClosed ? (
+        <p className="carnet-note carnet-note--warning">
+          Este evento está cerrado: no se pueden sumar jugadores, cambiar ventas ni asignar compradores. Reabrilo si
+          necesitás corregir algo.
+        </p>
+      ) : (
+        <AttachPlayerForm players={players} activeEventId={activeEventId} eventError={eventError} onAttachPlayer={onAttachPlayer} />
+      )}
 
       <EventOverviewStats event={event} daysLeft={daysLeft} />
 
@@ -82,6 +120,7 @@ export function CarnetEventTab({
             <RankingCard
               key={entry.id}
               entry={entry}
+              readOnly={isClosed}
               onEdit={() => setEditingEntry(entry)}
               onAddSale={() => {
                 if (!activeEventId) return;
