@@ -1,1 +1,1 @@
-export type TabMode = "players" | "male" | "female" | "events";
+export type TabMode = "players" | "male" | "female" | "events" | "visits";

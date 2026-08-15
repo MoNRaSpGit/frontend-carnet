@@ -1,0 +1,55 @@
+.carnet-visits-summary {
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.carnet-visits-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carnet-visits-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.carnet-visits-row.is-me {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.carnet-visits-row__main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.carnet-visits-row__tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.carnet-visits-row__meta {
+  display: flex;
+  gap: 14px;
+  font-size: 0.82rem;
+  color: #64748b;
+}

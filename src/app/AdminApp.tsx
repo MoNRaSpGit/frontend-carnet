@@ -5,6 +5,7 @@ import { HeroHeader } from "../features/carnet/components/HeroHeader";
 import { PlayerFormCard } from "../features/carnet/components/PlayerFormCard";
 import { PlayerGrid } from "../features/carnet/components/PlayerGrid";
 import { TopTabs } from "../features/carnet/components/TopTabs";
+import { VisitsTab } from "../features/carnet/components/VisitsTab";
 import { useCarnetEvents } from "../features/carnet/hooks/useCarnetEvents";
 import { usePlayers } from "../features/carnet/hooks/usePlayers";
 import { getAlertState, getDaysUntil, getNextExpiringDays } from "../features/carnet/utils/carnet.format";
@@ -58,6 +59,8 @@ export function AdminApp({ onLogout }: AdminAppProps) {
         </div>
         <PlayerGrid players={femalePlayers} onEdit={setEditingPlayer} />
       </section>
+    ) : activeTab === "visits" ? (
+      <VisitsTab />
     ) : (
       <CarnetEventTab
         players={carnetPlayers.players}

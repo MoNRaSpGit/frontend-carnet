@@ -9,7 +9,8 @@ const TABS: Array<{ id: TabMode; label: string }> = [
   { id: "players", label: "Jugadores" },
   { id: "male", label: "Masculino" },
   { id: "female", label: "Femenino" },
-  { id: "events", label: "Evento" }
+  { id: "events", label: "Evento" },
+  { id: "visits", label: "Visitas" }
 ];
 
 export function TopTabs({ activeTab, onChange }: TopTabsProps) {

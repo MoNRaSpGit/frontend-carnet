@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../../shared/config/api";
-import type { CarnetPlayer, CarnetPlayerPayload } from "./carnet.types";
+import type { CarnetPlayer, CarnetPlayerPayload, CarnetVisitSummary } from "./carnet.types";
 
 type ListPlayersResponse = {
   items: CarnetPlayer[];
@@ -61,4 +61,21 @@ export async function deleteCarnetPlayer(playerId: number) {
   });
 
   return readJson<DeletePlayerResponse>(response);
+}
+
+export async function recordCarnetVisit(visitorId: string, role: "usuario" | "admin") {
+  const response = await fetch(`${API_BASE_URL}/carnet/visits`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ visitorId, role })
+  });
+
+  return readJson<{ ok: true }>(response);
+}
+
+export async function listCarnetVisits() {
+  const response = await fetch(`${API_BASE_URL}/carnet/visits`);
+  return readJson<{ items: CarnetVisitSummary[] }>(response);
 }
