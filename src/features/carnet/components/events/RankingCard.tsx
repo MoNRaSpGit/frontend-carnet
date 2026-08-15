@@ -93,7 +93,7 @@ export function RankingCard({ entry, readOnly = false, onEdit, onAddSale, onSubt
           </button>
         </div>
 
-        {showDetails ? (
+        <div className={`carnet-ranking-card__buyers-wrapper${showDetails ? " is-open" : ""}`}>
           <div className="carnet-ranking-card__buyers">
             {entry.buyers.length ? (
               <ul className="carnet-ranking-card__buyer-list">
@@ -145,7 +145,7 @@ export function RankingCard({ entry, readOnly = false, onEdit, onAddSale, onSubt
 
             {buyerError ? <p className="carnet-ranking-card__buyer-error">{buyerError}</p> : null}
           </div>
-        ) : null}
+        </div>
       </div>
     </article>
   );

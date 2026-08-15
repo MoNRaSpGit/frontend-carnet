@@ -311,6 +311,23 @@
   cursor: pointer;
 }
 
+.carnet-ranking-card__buyers-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 220ms ease, opacity 180ms ease;
+}
+
+.carnet-ranking-card__buyers-wrapper.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.carnet-ranking-card__buyers-wrapper > .carnet-ranking-card__buyers {
+  overflow: hidden;
+  min-height: 0;
+}
+
 .carnet-ranking-card__buyers {
   display: grid;
   gap: 10px;
