@@ -191,6 +191,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  align-items: start;
 }
 
 .carnet-ranking-card {
@@ -201,6 +202,14 @@
   padding: 16px;
   background: #fff;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+/* Al expandir el detalle, la tarjeta ocupa todo el ancho de la fila en vez
+   de quedar apretada al lado de otras que pueden tener muchos menos (o
+   muchos mas) compradores -- evita que filas vecinas con alturas muy
+   distintas se vean descuadradas. */
+.carnet-ranking-card.is-expanded {
+  grid-column: 1 / -1;
 }
 
 .carnet-ranking-card.is-leader {

@@ -49,7 +49,9 @@ export function RankingCard({ entry, readOnly = false, onEdit, onAddSale, onSubt
   const isFullyDetailed = entry.sales > 0 && entry.unassignedSales <= 0;
 
   return (
-    <article className={`carnet-ranking-card ${entry.position === 1 ? "is-leader" : ""}`}>
+    <article
+      className={`carnet-ranking-card ${entry.position === 1 ? "is-leader" : ""} ${showDetails ? "is-expanded" : ""}`}
+    >
       <div className="carnet-ranking-card__main" onDoubleClick={onEdit}>
         <div className="carnet-ranking-card__title">
           <h3>{entry.playerName}</h3>
