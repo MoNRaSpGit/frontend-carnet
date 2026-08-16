@@ -1,15 +1,51 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { formatNumber } from "../../utils/carnet.format";
 import type { CarnetEventRankingItem } from "../../carnet.event.types";
 
 type UsuarioSaleCardProps = {
   entry: CarnetEventRankingItem;
   onToggleDelivered: (buyerId: number, delivered: boolean) => void;
+  onAddSale: (buyerName: string, quantity: number) => Promise<unknown>;
 };
 
-export function UsuarioSaleCard({ entry, onToggleDelivered }: UsuarioSaleCardProps) {
+export function UsuarioSaleCard({ entry, onToggleDelivered, onAddSale }: UsuarioSaleCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [buyerName, setBuyerName] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const deliveredCount = entry.buyers.reduce((sum, buyer) => sum + (buyer.delivered ? buyer.quantity : 0), 0);
+
+  async function handleSubmitSale(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedName = buyerName.trim();
+    const parsedQuantity = Number.parseInt(quantity, 10);
+
+    if (!trimmedName) {
+      setError("Ingresá el nombre de la persona.");
+      return;
+    }
+    if (!Number.isFinite(parsedQuantity) || parsedQuantity < 1) {
+      setError("La cantidad debe ser 1 o más.");
+      return;
+    }
+
+    setError(null);
+    setSaving(true);
+
+    try {
+      await onAddSale(trimmedName, parsedQuantity);
+      setBuyerName("");
+      setQuantity("1");
+      setShowAddForm(false);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "No se pudo agregar la venta.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <article className="carnet-usuario-card">
@@ -47,6 +83,39 @@ export function UsuarioSaleCard({ entry, onToggleDelivered }: UsuarioSaleCardPro
           <p className="carnet-usuario-card__empty">Todavia no hay detalle de ventas cargado.</p>
         )
       ) : null}
+
+      {showAddForm ? (
+        <form className="carnet-usuario-card__add-form" onSubmit={handleSubmitSale}>
+          <input
+            type="text"
+            className="carnet-usuario-card__add-input"
+            placeholder="Nombre de la persona"
+            value={buyerName}
+            onChange={(event) => setBuyerName(event.target.value)}
+            autoFocus
+          />
+          <input
+            type="number"
+            min="1"
+            className="carnet-usuario-card__add-quantity"
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+          />
+          <div className="carnet-usuario-card__add-actions">
+            <button type="button" className="carnet-usuario-card__add-cancel" onClick={() => setShowAddForm(false)} disabled={saving}>
+              Cancelar
+            </button>
+            <button type="submit" className="carnet-usuario-card__add-confirm" disabled={saving}>
+              {saving ? "Guardando..." : "Agregar"}
+            </button>
+          </div>
+          {error ? <p className="carnet-usuario-card__add-error">{error}</p> : null}
+        </form>
+      ) : (
+        <button type="button" className="carnet-usuario-card__add-toggle" onClick={() => setShowAddForm(true)}>
+          Agregar
+        </button>
+      )}
     </article>
   );
 }

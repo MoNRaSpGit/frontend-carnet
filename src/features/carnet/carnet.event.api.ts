@@ -107,6 +107,20 @@ export async function addCarnetEventPlayerBuyer(eventId: number, playerId: numbe
   return readJson<UpsertEventPlayerResponse>(response);
 }
 
+// Sin token admin: la usa cualquier usuario (no solo admin) para cargar
+// una venta nueva desde su propia tarjeta en UsuarioApp.
+export async function addCarnetEventPlayerSale(eventId: number, playerId: number, buyerName: string, quantity: number) {
+  const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/sales`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ buyerName, quantity })
+  });
+
+  return readJson<UpsertEventPlayerResponse>(response);
+}
+
 // Sin token admin: la usa cualquier usuario (no solo admin) para marcar
 // entregas de porciones desde UsuarioApp.
 export async function setCarnetEventPlayerBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {

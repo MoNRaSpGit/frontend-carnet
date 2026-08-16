@@ -70,6 +70,10 @@ export function UsuarioApp({ onLogout }: UsuarioAppProps) {
                   toast.error("No se pudo guardar la entrega, se deshizo el cambio.");
                 });
               }}
+              onAddSale={(buyerName, quantity) => {
+                if (!carnetEvents.activeEventId) return Promise.reject(new Error("No hay evento activo."));
+                return carnetEvents.addPlayerSale(carnetEvents.activeEventId, entry.playerId, buyerName, quantity);
+              }}
             />
           ))}
         </div>

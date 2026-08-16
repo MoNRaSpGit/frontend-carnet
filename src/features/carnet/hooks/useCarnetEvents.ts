@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   addCarnetEventPlayerBuyer,
+  addCarnetEventPlayerSale,
   createCarnetEvent,
   getCarnetEvent,
   listCarnetEvents,
@@ -141,6 +142,13 @@ export function useCarnetEvents() {
     return response.item;
   }
 
+  async function addPlayerSale(eventId: number, playerId: number, buyerName: string, quantity: number) {
+    const response = await addCarnetEventPlayerSale(eventId, playerId, buyerName, quantity);
+    setActiveEventDetail(response.item);
+    setEvents((current) => sortEvents(current.map((event) => (event.id === response.item.event.id ? response.item.event : event))));
+    return response.item;
+  }
+
   function applyBuyerDelivered(playerId: number, buyerId: number, delivered: boolean) {
     setActiveEventDetail((current) => {
       if (!current) return current;
@@ -208,6 +216,7 @@ export function useCarnetEvents() {
     attachPlayer,
     updatePlayerSales,
     addPlayerBuyer,
+    addPlayerSale,
     removePlayerBuyer,
     setBuyerDelivered,
     syncPlayer
