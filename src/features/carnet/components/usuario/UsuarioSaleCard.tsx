@@ -2,6 +2,15 @@ import { useState, type FormEvent } from "react";
 import { formatNumber } from "../../utils/carnet.format";
 import type { CarnetEventRankingItem } from "../../carnet.event.types";
 
+// Ocultado a pedido explicito (2026-08-16): el boton "Agregar" de esta
+// tarjeta (que permite a cualquier operario cargar una venta nueva sin
+// PIN de admin) se implemento y se probo en produccion, pero se decidio
+// no mostrarlo por ahora. El backend (POST
+// carnet/events/:eventId/players/:playerId/sales, sin guard) y todo este
+// componente siguen intactos -- para reactivarlo, poner esta constante
+// en true.
+const MOSTRAR_BOTON_AGREGAR = false;
+
 type UsuarioSaleCardProps = {
   entry: CarnetEventRankingItem;
   onToggleDelivered: (buyerId: number, delivered: boolean) => void;
@@ -84,38 +93,39 @@ export function UsuarioSaleCard({ entry, onToggleDelivered, onAddSale }: Usuario
         )
       ) : null}
 
-      {showAddForm ? (
-        <form className="carnet-usuario-card__add-form" onSubmit={handleSubmitSale}>
-          <input
-            type="text"
-            className="carnet-usuario-card__add-input"
-            placeholder="Nombre de la persona"
-            value={buyerName}
-            onChange={(event) => setBuyerName(event.target.value)}
-            autoFocus
-          />
-          <input
-            type="number"
-            min="1"
-            className="carnet-usuario-card__add-quantity"
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-          />
-          <div className="carnet-usuario-card__add-actions">
-            <button type="button" className="carnet-usuario-card__add-cancel" onClick={() => setShowAddForm(false)} disabled={saving}>
-              Cancelar
-            </button>
-            <button type="submit" className="carnet-usuario-card__add-confirm" disabled={saving}>
-              {saving ? "Guardando..." : "Agregar"}
-            </button>
-          </div>
-          {error ? <p className="carnet-usuario-card__add-error">{error}</p> : null}
-        </form>
-      ) : (
-        <button type="button" className="carnet-usuario-card__add-toggle" onClick={() => setShowAddForm(true)}>
-          Agregar
-        </button>
-      )}
+      {MOSTRAR_BOTON_AGREGAR &&
+        (showAddForm ? (
+          <form className="carnet-usuario-card__add-form" onSubmit={handleSubmitSale}>
+            <input
+              type="text"
+              className="carnet-usuario-card__add-input"
+              placeholder="Nombre de la persona"
+              value={buyerName}
+              onChange={(event) => setBuyerName(event.target.value)}
+              autoFocus
+            />
+            <input
+              type="number"
+              min="1"
+              className="carnet-usuario-card__add-quantity"
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+            />
+            <div className="carnet-usuario-card__add-actions">
+              <button type="button" className="carnet-usuario-card__add-cancel" onClick={() => setShowAddForm(false)} disabled={saving}>
+                Cancelar
+              </button>
+              <button type="submit" className="carnet-usuario-card__add-confirm" disabled={saving}>
+                {saving ? "Guardando..." : "Agregar"}
+              </button>
+            </div>
+            {error ? <p className="carnet-usuario-card__add-error">{error}</p> : null}
+          </form>
+        ) : (
+          <button type="button" className="carnet-usuario-card__add-toggle" onClick={() => setShowAddForm(true)}>
+            Agregar
+          </button>
+        ))}
     </article>
   );
 }
