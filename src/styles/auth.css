@@ -47,6 +47,38 @@
   box-shadow: 0 12px 24px rgba(51, 65, 85, 0.2);
 }
 
+.carnet-login-pin-form {
+  display: grid;
+  gap: 10px;
+}
+
+.carnet-login-pin-input {
+  min-height: 48px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.carnet-login-pin-input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.carnet-login-button--admin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.carnet-login-pin-error {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
 .carnet-session-bar {
   width: min(1080px, 100%);
   margin: 0 auto 10px;

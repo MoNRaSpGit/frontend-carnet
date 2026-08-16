@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../../shared/config/api";
+import { carnetAdminHeaders } from "./carnetAdminSession";
 import type { CarnetPlayer, CarnetPlayerPayload, CarnetVisitSummary } from "./carnet.types";
 
 type ListPlayersResponse = {
@@ -26,6 +27,18 @@ async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+export async function loginCarnetAdmin(pin: string) {
+  const response = await fetch(`${API_BASE_URL}/carnet/admin/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ pin })
+  });
+
+  return readJson<{ token: string }>(response);
+}
+
 export async function listCarnetPlayers() {
   const response = await fetch(`${API_BASE_URL}/carnet/players`);
   return readJson<ListPlayersResponse>(response);
@@ -35,7 +48,8 @@ export async function createCarnetPlayer(payload: CarnetPlayerPayload) {
   const response = await fetch(`${API_BASE_URL}/carnet/players`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify(payload)
   });
@@ -47,7 +61,8 @@ export async function updateCarnetPlayer(playerId: number, payload: Partial<Carn
   const response = await fetch(`${API_BASE_URL}/carnet/players/${playerId}`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify(payload)
   });
@@ -57,7 +72,10 @@ export async function updateCarnetPlayer(playerId: number, payload: Partial<Carn
 
 export async function deleteCarnetPlayer(playerId: number) {
   const response = await fetch(`${API_BASE_URL}/carnet/players/${playerId}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      ...carnetAdminHeaders()
+    }
   });
 
   return readJson<DeletePlayerResponse>(response);
@@ -76,6 +94,10 @@ export async function recordCarnetVisit(visitorId: string, role: "usuario" | "ad
 }
 
 export async function listCarnetVisits() {
-  const response = await fetch(`${API_BASE_URL}/carnet/visits`);
+  const response = await fetch(`${API_BASE_URL}/carnet/visits`, {
+    headers: {
+      ...carnetAdminHeaders()
+    }
+  });
   return readJson<{ items: CarnetVisitSummary[] }>(response);
 }

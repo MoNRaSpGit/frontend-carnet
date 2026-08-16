@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../../shared/config/api";
+import { carnetAdminHeaders } from "./carnetAdminSession";
 import type { CarnetPlayer } from "./carnet.types";
 import type { CarnetEvent, CarnetEventDetail } from "./carnet.event.types";
 
@@ -45,7 +46,8 @@ export async function createCarnetEvent(name: string, endDate: string) {
   const response = await fetch(`${API_BASE_URL}/carnet/events`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify({ name, endDate })
   });
@@ -57,7 +59,8 @@ export async function setCarnetEventClosed(eventId: number, isClosed: boolean) {
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify({ isClosed })
   });
@@ -69,7 +72,8 @@ export async function upsertCarnetEventPlayer(eventId: number, playerId: number,
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify({ playerId, sales })
   });
@@ -81,7 +85,8 @@ export async function updateCarnetEventPlayer(eventId: number, playerId: number,
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify({ sales })
   });
@@ -93,7 +98,8 @@ export async function addCarnetEventPlayerBuyer(eventId: number, playerId: numbe
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/buyers`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...carnetAdminHeaders()
     },
     body: JSON.stringify({ buyerName, quantity })
   });
@@ -101,6 +107,8 @@ export async function addCarnetEventPlayerBuyer(eventId: number, playerId: numbe
   return readJson<UpsertEventPlayerResponse>(response);
 }
 
+// Sin token admin: la usa cualquier usuario (no solo admin) para marcar
+// entregas de porciones desde UsuarioApp.
 export async function setCarnetEventPlayerBuyerDelivered(eventId: number, playerId: number, buyerId: number, delivered: boolean) {
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/buyers/${buyerId}/delivered`, {
     method: "PATCH",
@@ -115,7 +123,10 @@ export async function setCarnetEventPlayerBuyerDelivered(eventId: number, player
 
 export async function removeCarnetEventPlayerBuyer(eventId: number, playerId: number, buyerId: number) {
   const response = await fetch(`${API_BASE_URL}/carnet/events/${eventId}/players/${playerId}/buyers/${buyerId}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      ...carnetAdminHeaders()
+    }
   });
 
   return readJson<UpsertEventPlayerResponse>(response);
