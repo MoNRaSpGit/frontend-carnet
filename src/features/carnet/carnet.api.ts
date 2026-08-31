@@ -18,10 +18,23 @@ type DeletePlayerResponse = {
   item: CarnetPlayer;
 };
 
+// El backend (Nest) manda los errores como JSON ({statusCode, message}) --
+// si solo se tirara el texto crudo, el mensaje que ve el usuario terminaba
+// siendo el JSON entero en vez de la frase legible (ej: "Sesion de
+// administrador invalida." en vez de eso perdido dentro de un {...}).
 async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const fallbackText = await response.text().catch(() => "");
-    throw new Error(fallbackText || `HTTP ${response.status}`);
+    try {
+      const parsed = JSON.parse(fallbackText) as { message?: string | string[] };
+      const message = Array.isArray(parsed.message) ? parsed.message.join(" ") : parsed.message;
+      throw new Error(message || fallbackText || `HTTP ${response.status}`);
+    } catch (parseError) {
+      if (parseError instanceof Error && parseError.message && parseError.message !== fallbackText) {
+        throw parseError;
+      }
+      throw new Error(fallbackText || `HTTP ${response.status}`);
+    }
   }
 
   return (await response.json()) as T;

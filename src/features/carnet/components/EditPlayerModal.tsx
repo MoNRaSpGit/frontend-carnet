@@ -4,7 +4,7 @@ import type { CarnetPlayer, CarnetPlayerPayload, CarnetSex } from "../carnet.typ
 type EditPlayerModalProps = {
   player: CarnetPlayer;
   onClose: () => void;
-  onSave: (payload: CarnetPlayerPayload) => Promise<unknown>;
+  onSave: (payload: Partial<CarnetPlayerPayload>) => Promise<unknown>;
   onDelete: () => Promise<unknown>;
 };
 
@@ -28,8 +28,10 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
     const trimmedCedula = cedula.trim();
     const parsedSales = sales.trim() ? Number.parseInt(sales, 10) : null;
 
-    if (!trimmedName || !expiryDate || !trimmedCedula || !birthDate) {
-      setError("Completa nombre, fecha de vencimiento, cedula y fecha de nacimiento antes de guardar.");
+    // Cedula y fecha de nacimiento quedan opcionales: lo unico obligatorio
+    // para el carnet en si es el nombre y el vencimiento.
+    if (!trimmedName || !expiryDate) {
+      setError("Completa nombre y fecha de vencimiento antes de guardar.");
       return;
     }
 
@@ -42,10 +44,19 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
     setError(null);
 
     try {
-      await onSave({ name: trimmedName, expiryDate, sex, cedula: trimmedCedula, birthDate, sales: parsedSales });
+      // Si se dejan en blanco, no se mandan -- el backend conserva lo que
+      // ya habia en vez de pisarlo con un valor vacio.
+      await onSave({
+        name: trimmedName,
+        expiryDate,
+        sex,
+        sales: parsedSales,
+        ...(trimmedCedula ? { cedula: trimmedCedula } : {}),
+        ...(birthDate ? { birthDate } : {})
+      });
       onClose();
-    } catch {
-      setError("No se pudo guardar en la base de datos.");
+    } catch (saveError) {
+      setError(saveError instanceof Error && saveError.message ? saveError.message : "No se pudo guardar en la base de datos.");
     } finally {
       setSavingAction(null);
     }
@@ -106,12 +117,12 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
         </label>
 
         <label className="carnet-field">
-          <span>Cedula</span>
+          <span>Cedula opcional</span>
           <input value={cedula} onChange={(event) => setCedula(event.target.value)} placeholder="Ej: 1234567-8" />
         </label>
 
         <label className="carnet-field">
-          <span>Fecha de nacimiento</span>
+          <span>Fecha de nacimiento opcional</span>
           <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} />
         </label>
 
