@@ -64,6 +64,11 @@
     align-items: flex-start;
   }
 
+  .carnet-search-input {
+    width: 100%;
+    min-width: 0;
+  }
+
   .carnet-tabs--header {
     gap: 8px;
   }

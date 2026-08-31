@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { DateTextInput } from "./DateTextInput";
 import type { CarnetPlayerPayload, CarnetSex } from "../carnet.types";
 
 type PlayerFormCardProps = {
@@ -67,10 +68,9 @@ export function PlayerFormCard({ onCreate, listError }: PlayerFormCardProps) {
 
         <label className="carnet-field">
           <span>Vencimiento carnet</span>
-          <input
-            type="date"
+          <DateTextInput
             value={form.expiryDate}
-            onChange={(event) => setForm((current) => ({ ...current, expiryDate: event.target.value }))}
+            onChange={(expiryDate) => setForm((current) => ({ ...current, expiryDate }))}
           />
         </label>
 
@@ -93,10 +93,9 @@ export function PlayerFormCard({ onCreate, listError }: PlayerFormCardProps) {
 
         <label className="carnet-field">
           <span>Fecha de nacimiento</span>
-          <input
-            type="date"
+          <DateTextInput
             value={form.birthDate}
-            onChange={(event) => setForm((current) => ({ ...current, birthDate: event.target.value }))}
+            onChange={(birthDate) => setForm((current) => ({ ...current, birthDate }))}
           />
         </label>
 

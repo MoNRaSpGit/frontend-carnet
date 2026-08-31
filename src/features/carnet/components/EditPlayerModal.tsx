@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DateTextInput } from "./DateTextInput";
 import type { CarnetPlayer, CarnetPlayerPayload, CarnetSex } from "../carnet.types";
 
 type EditPlayerModalProps = {
@@ -105,7 +106,7 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
 
         <label className="carnet-field">
           <span>Vencimiento carnet</span>
-          <input type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} />
+          <DateTextInput value={expiryDate} onChange={setExpiryDate} />
         </label>
 
         <label className="carnet-field">
@@ -123,7 +124,7 @@ export function EditPlayerModal({ player, onClose, onSave, onDelete }: EditPlaye
 
         <label className="carnet-field">
           <span>Fecha de nacimiento opcional</span>
-          <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} />
+          <DateTextInput value={birthDate} onChange={setBirthDate} />
         </label>
 
         <label className="carnet-field">

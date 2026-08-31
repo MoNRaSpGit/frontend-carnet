@@ -19,6 +19,8 @@ type AdminAppProps = {
 export function AdminApp({ onLogout }: AdminAppProps) {
   const [activeTab, setActiveTab] = useState<TabMode>("players");
   const [editingPlayer, setEditingPlayer] = useState<CarnetPlayer | null>(null);
+  const [maleSearch, setMaleSearch] = useState("");
+  const [femaleSearch, setFemaleSearch] = useState("");
 
   const carnetEvents = useCarnetEvents();
   const carnetPlayers = usePlayers({ onPlayerChanged: carnetEvents.syncPlayer });
@@ -36,6 +38,20 @@ export function AdminApp({ onLogout }: AdminAppProps) {
   const malePlayers = carnetPlayers.players.filter((player) => player.sex === "masculino");
   const femalePlayers = carnetPlayers.players.filter((player) => player.sex === "femenino");
 
+  const DIACRITICS_PATTERN = new RegExp("[̀-ͯ]", "g");
+  const normalize = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(DIACRITICS_PATTERN, "");
+
+  const visibleMalePlayers = maleSearch.trim()
+    ? malePlayers.filter((player) => normalize(player.name).includes(normalize(maleSearch)))
+    : malePlayers;
+  const visibleFemalePlayers = femaleSearch.trim()
+    ? femalePlayers.filter((player) => normalize(player.name).includes(normalize(femaleSearch)))
+    : femalePlayers;
+
   const tabContent =
     activeTab === "players" ? (
       <PlayerFormCard onCreate={carnetPlayers.createPlayer} listError={carnetPlayers.listError} />
@@ -46,8 +62,15 @@ export function AdminApp({ onLogout }: AdminAppProps) {
             <p className="carnet-card__eyebrow">Masculino</p>
             <h2>Jugadores</h2>
           </div>
+          <input
+            type="text"
+            className="carnet-search-input"
+            placeholder="Buscar jugador..."
+            value={maleSearch}
+            onChange={(event) => setMaleSearch(event.target.value)}
+          />
         </div>
-        <PlayerGrid players={malePlayers} onEdit={setEditingPlayer} />
+        <PlayerGrid players={visibleMalePlayers} onEdit={setEditingPlayer} />
       </section>
     ) : activeTab === "female" ? (
       <section className="carnet-card" aria-label="Jugadoras femeninas">
@@ -56,8 +79,15 @@ export function AdminApp({ onLogout }: AdminAppProps) {
             <p className="carnet-card__eyebrow">Femenino</p>
             <h2>Jugadoras</h2>
           </div>
+          <input
+            type="text"
+            className="carnet-search-input"
+            placeholder="Buscar jugadora..."
+            value={femaleSearch}
+            onChange={(event) => setFemaleSearch(event.target.value)}
+          />
         </div>
-        <PlayerGrid players={femalePlayers} onEdit={setEditingPlayer} />
+        <PlayerGrid players={visibleFemalePlayers} onEdit={setEditingPlayer} />
       </section>
     ) : activeTab === "visits" ? (
       <VisitsTab />
